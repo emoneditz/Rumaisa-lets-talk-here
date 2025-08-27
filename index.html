@@ -433,6 +433,17 @@
         return icons[ext] || 'fa-solid fa-file';
     }
 
+    // New helper function to convert GMT timestamp to your local GMT+6
+    function getGMTPlus6Time(unixTimestamp) {
+        const date = new Date(unixTimestamp * 1000);
+        // Add 6 hours to the UTC time
+        const offsetInMinutes = date.getTimezoneOffset(); // get offset in minutes
+        const localTime = date.getTime();
+        const utcTime = localTime + offsetInMinutes * 60 * 1000;
+        const gmtPlus6 = utcTime + (6 * 60 * 60 * 1000);
+        return new Date(gmtPlus6);
+    }
+
     function displayMessage(messageData, prepend = false) {
         const msgDiv = document.createElement('div');
         msgDiv.classList.add('message', messageData.sender);
@@ -477,13 +488,17 @@
         }
         const timeDiv = document.createElement('div');
         timeDiv.classList.add('message-time', 'text-gray-400');
-        timeDiv.textContent = new Date(messageData.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        // Use the corrected timestamp for display and format it to 12-hour style
+        const displayDate = new Date(messageData.timestamp);
+        timeDiv.textContent = displayDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
         msgDiv.appendChild(timeDiv);
         if (prepend) chatBox.insertBefore(msgDiv, chatBox.firstChild); else chatBox.appendChild(msgDiv);
     }
 
-    function addMessage(text, sender, mediaUrl = null, mediaType = 'image', fileName = null, fileSize = null) {
-        const messageData = { text, sender, mediaUrl, mediaType, fileName, fileSize, timestamp: Date.now(), id: Date.now() + Math.random() };
+    // Now uses an optional timestamp parameter
+    function addMessage(text, sender, mediaUrl = null, mediaType = 'image', fileName = null, fileSize = null, timestamp = Date.now()) {
+        const messageData = { text, sender, mediaUrl, mediaType, fileName, fileSize, timestamp, id: Date.now() + Math.random() };
         chatHistory.push(messageData);
         saveChatHistory();
         displayMessage(messageData);
@@ -505,7 +520,10 @@
         const file = fileInput.files[0];
         if (file) { sendFile(); return; }
         if (!message) return;
+        
+        // Send messages created by 'me' with the local timestamp
         addMessage(message, 'me');
+
         messageInput.value = '';
         autoResizeTextarea();
         fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
@@ -666,17 +684,18 @@
                             const photo = message.photo;
                             const video = message.video;
                             const document = message.document;
-                            if (text && !photo && !document && !video) addMessage(text, 'rumaisa');
+                            const telegramTimestamp = message.date * 1000; // Corrected timestamp
+                            if (text && !photo && !document && !video) addMessage(text, 'rumaisa', null, null, null, null, telegramTimestamp);
                             else if (photo) {
                                 const largestPhoto = photo[photo.length - 1];
                                 fetch(`https://api.telegram.org/bot${TOKEN}/getFile?file_id=${largestPhoto.file_id}`)
                                     .then(res => res.json())
-                                    .then(fileData => { if (fileData.ok) { const photoUrl = `https://api.telegram.org/file/bot${TOKEN}/${fileData.result.file_path}`; addMessage(text, 'rumaisa', photoUrl, 'image'); } });
+                                    .then(fileData => { if (fileData.ok) { const photoUrl = `https://api.telegram.org/file/bot${TOKEN}/${fileData.result.file_path}`; addMessage(text, 'rumaisa', photoUrl, 'image', null, null, telegramTimestamp); } });
                             } else if (video) {
                                 fetch(`https://api.telegram.org/bot${TOKEN}/getFile?file_id=${video.file_id}`)
                                     .then(res => res.json())
-                                    .then(fileData => { if (fileData.ok) { const videoUrl = `https://api.telegram.org/file/bot${TOKEN}/${fileData.result.file_path}`; addMessage(text, 'rumaisa', videoUrl, 'video', video.file_name, video.file_size); } });
-                            } else if (document) addMessage(text, 'rumaisa', null, 'document', document.file_name, document.file_size);
+                                    .then(fileData => { if (fileData.ok) { const videoUrl = `https://api.telegram.org/file/bot${TOKEN}/${fileData.result.file_path}`; addMessage(text, 'rumaisa', videoUrl, 'video', video.file_name, video.file_size, telegramTimestamp); } });
+                            } else if (document) addMessage(text, 'rumaisa', null, 'document', document.file_name, document.file_size, telegramTimestamp);
                         }
                     });
                 }
@@ -725,4 +744,3 @@
 
 </body>
 </html>
-
