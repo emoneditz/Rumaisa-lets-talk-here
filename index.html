@@ -6,6 +6,8 @@
     <title>Liquid Glass Chat - Optimized</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Emoji Picker Library -->
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
     <style>
         /* --- OPTIMIZATION APPLIED: Reduced GPU Load for Low-End Devices --- */
         :root {
@@ -19,7 +21,7 @@
             --text-primary: rgba(255, 255, 255, 0.9);
             --text-secondary: rgba(255, 255, 255, 0.7);
             /* Reduced blur radius from 40px to 15px and removed saturate() */
-            --backdrop-blur: blur(15px);
+            --backdrop-blur: blur(8px);
         }
 
         * {
@@ -655,6 +657,25 @@
             background-color: rgba(255, 255, 255, 0.1);
         }
 
+        /* ADDED: Emoji Picker Styles */
+        #emojiPickerContainer {
+            position: absolute;
+            z-index: 102;
+            transform-origin: top left;
+            animation: modalZoom 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        emoji-picker {
+            --background: var(--glass-primary);
+            --border-color: var(--glass-border);
+            --outline-color: rgba(0, 122, 255, 0.5);
+            --text-color: var(--text-primary);
+            --secondary-text-color: var(--text-secondary);
+            --border-radius: 1rem;
+            --box-shadow: var(--glass-shadow);
+            backdrop-filter: var(--backdrop-blur);
+            -webkit-backdrop-filter: var(--backdrop-blur);
+        }
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .message {
@@ -691,7 +712,7 @@
 
 <div class="chat-container">
     <div class="chat-header">
-        <h3 class="font-bold text-xl tracking-wide mb-2">💬 Hello Miss Rumaisa</h3>
+        <h3 class="font-bold text-xl tracking-wide mb-2">Hello boin 🙂 Apni nachte paren? </h3>
         <div class="text-sm font-semibold flex items-center gap-3">
             <button id="statusBtn" class="status-button">
                 <i class="fas fa-pulse mr-2"></i>Click here to see Online
@@ -762,6 +783,11 @@
     <img class="modal-content" id="fullImage" src="" alt="Full size image">
 </div>
 
+<!-- Container for Emoji Picker -->
+<div id="emojiPickerContainer" class="hidden absolute">
+    <emoji-picker class="light"></emoji-picker>
+</div>
+
 <div id="messageActionMenu" class="hidden absolute z-[101]">
     <div id="quickReactions" class="flex items-center gap-1 bg-glass-primary backdrop-blur rounded-full shadow-lg border border-glass-border p-2 mb-2">
         <!-- Reactions will be populated by JS -->
@@ -786,7 +812,7 @@
 <script>
     const TOKEN = "8373355359:AAF0b7kWG2mNFv0qBYt2YTjvW5mD6eSBCuw";
     const CHAT_ID = "6009819572";
-    const RUMAISA_ID = "6009819572";
+    const RUMAISA_ID = 6009819572; // Changed to number for strict comparison
     const chatBox = document.getElementById('chatBox');
     const loadMoreBtn = document.getElementById('loadMore');
     const modalContainer = document.getElementById('modalContainer');
@@ -816,6 +842,7 @@
     const replyingToUser = document.getElementById('replyingToUser');
     const replyingToText = document.getElementById('replyingToText');
     const replyCloseBtn = document.getElementById('replyCloseBtn');
+    const emojiPickerContainer = document.getElementById('emojiPickerContainer');
 
     let chatHistory = [];
     let historyOffset = 0;
@@ -828,7 +855,8 @@
     
     let activeMessageElement = null;
     let activeReplyMessage = null;
-    const defaultReactions = ['🙂', '👍', '❤️', '😂', '😮', '😢'];
+    // UPDATED: Emoji changed from 😂 to 🤣
+    const defaultReactions = ['🤣', '❤️', '👍', '👎', '🔥', '🥰'];
 
     function loadChatHistory() {
         const storedHistory = localStorage.getItem('chatHistory');
@@ -859,7 +887,6 @@
             displayMessage(msg, false); // Append messages
         });
         
-        // Re-add load more button at the top
         chatBox.insertAdjacentElement('afterbegin', loadMoreBtn);
         
         if (chatHistory.length > count) { 
@@ -950,6 +977,9 @@
     }
 
     function displayMessage(messageData, prepend = false) {
+        const existingMsgDiv = document.querySelector(`div[data-message-id='${messageData.id}']`);
+        if (existingMsgDiv) existingMsgDiv.remove();
+
         const msgDiv = document.createElement('div');
         msgDiv.classList.add('message', messageData.sender);
         msgDiv.dataset.messageId = messageData.id;
@@ -1014,7 +1044,6 @@
         reactionsContainer.className = 'reactions-container';
         if (messageData.reactions && Object.keys(messageData.reactions).length > 0) {
             updateReactionsDisplay(reactionsContainer, messageData.reactions);
-            reactionsContainer.classList.add('visible');
         }
         msgDiv.appendChild(reactionsContainer);
         
@@ -1033,14 +1062,21 @@
         }
     }
 
-    function addMessage(text, sender, mediaUrl = null, mediaType = 'image', fileName = null, fileSize = null, timestamp = Date.now(), replyToId = null) {
-        const messageData = { text, sender, mediaUrl, mediaType, fileName, fileSize, timestamp, id: Date.now() + '' + Math.random(), reactions: {}, replyTo: replyToId };
+    function addMessage(text, sender, mediaUrl = null, mediaType = 'image', fileName = null, fileSize = null, timestamp = Date.now(), replyToId = null, telegramMsgId = null) {
+        const messageData = { 
+            text, sender, mediaUrl, mediaType, fileName, fileSize, timestamp, 
+            id: Date.now() + '' + Math.random(), 
+            reactions: {}, 
+            replyTo: replyToId,
+            telegramMessageId: telegramMsgId 
+        };
         chatHistory.push(messageData);
         saveChatHistory();
         displayMessage(messageData);
         if (initialLoadComplete) {
             setTimeout(() => scrollToBottom(), 100);
         }
+        return messageData;
     }
 
     function openMessageActionMenu(messageEl) {
@@ -1070,6 +1106,7 @@
             messageActionMenu.classList.add('hidden');
             activeMessageElement = null;
         }
+        emojiPickerContainer.classList.add('hidden');
     }
 
     function handleReaction(emoji) {
@@ -1078,25 +1115,35 @@
         const message = chatHistory.find(m => m.id == messageId);
 
         if (message) {
-            message.reactions[emoji] = (message.reactions[emoji] || 0) + 1;
+             if (message.reactions[emoji]) {
+                 delete message.reactions[emoji]; // Toggle off
+            } else {
+                 message.reactions[emoji] = 1; // Toggle on
+            }
             saveChatHistory();
+
             const reactionsContainer = activeMessageElement.querySelector('.reactions-container');
             updateReactionsDisplay(reactionsContainer, message.reactions);
-            reactionsContainer.classList.add('visible');
 
-            const originalMessageText = (message.text || 'attachment').substring(0, 20);
-            const notificationText = `Message "${originalMessageText}..." reacted with ${emoji}`;
-            fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ chat_id: CHAT_ID, text: notificationText })
-            }).then(res=>res.json()).then(data=>{ if(data.ok) showSentStatus(`Reacted with ${emoji}!`); });
+            if (message.telegramMessageId) {
+                const reactionPayload = Object.keys(message.reactions).map(em => ({ type: 'emoji', emoji: em }));
+                fetch(`https://api.telegram.org/bot${TOKEN}/setMessageReaction`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: CHAT_ID,
+                        message_id: message.telegramMessageId,
+                        reaction: reactionPayload.length > 0 ? JSON.stringify(reactionPayload) : '',
+                    })
+                });
+            }
         }
         closeMessageActionMenu();
     }
     
     function updateReactionsDisplay(container, reactions) {
-        container.innerHTML = Object.entries(reactions).map(([emoji, count]) => `<span class="reaction-pill">${emoji} ${count > 1 ? count : ''}</span>`).join('');
+        container.innerHTML = Object.keys(reactions).map(emoji => `<span class="reaction-pill">${emoji}</span>`).join('');
+        container.classList.toggle('visible', Object.keys(reactions).length > 0);
     }
     
     function copyMessageText() {
@@ -1133,9 +1180,11 @@
     }
     
     function populateReactions() {
-        quickReactions.innerHTML = defaultReactions.map(emoji => 
-            `<button class="reaction-emoji text-2xl transform hover:scale-125 transition-transform" onclick="handleReaction('${emoji}')">${emoji}</button>`
-        ).join('') + `<button class="reaction-emoji text-xl" onclick="showSentStatus('Custom reactions soon!', 'error')"><i class="fas fa-plus-circle text-gray-300"></i></button>`;
+        const reactionsHTML = defaultReactions.map(emoji => 
+            `<button class="reaction-emoji text-2xl transform hover:scale-125 transition-transform" onclick="event.stopPropagation(); handleReaction('${emoji}')">${emoji}</button>`
+        ).join('');
+        
+        quickReactions.innerHTML = reactionsHTML;
     }
     
     function deleteMessage() {
@@ -1146,21 +1195,26 @@
         closeMessageActionMenu();
 
         if (messageIndex > -1) {
-            const truncatedContent = (chatHistory[messageIndex].text || "Attachment").substring(0, 50);
-            chatHistory.splice(messageIndex, 1);
-            saveChatHistory();
-            elementToDelete.style.transition = 'opacity 0.4s, transform 0.4s';
-            elementToDelete.style.opacity = '0';
-            elementToDelete.style.transform = 'translateX(20px) scale(0.9)';
-            setTimeout(() => elementToDelete.remove(), 400);
-            showSentStatus('Message deleted!');
+            const messageToDelete = chatHistory[messageIndex];
+            const truncatedContent = (messageToDelete.text || "Attachment").substring(0, 50);
 
+            // Send a notification message to Telegram
             const notificationText = `"${truncatedContent}..." MESSAGE HAS BEEN DELETED`;
             fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' }, 
                 body: JSON.stringify({ chat_id: CHAT_ID, text: notificationText })
             });
+            
+            // Remove from UI and local history
+            chatHistory.splice(messageIndex, 1);
+            saveChatHistory();
+
+            elementToDelete.style.transition = 'opacity 0.4s, transform 0.4s';
+            elementToDelete.style.opacity = '0';
+            elementToDelete.style.transform = 'translateX(20px) scale(0.9)';
+            setTimeout(() => elementToDelete.remove(), 400);
+            showSentStatus('Message removed from site!');
         }
     }
 
@@ -1182,46 +1236,52 @@
     }
 
     function addQuickEmoji() {
-        const quickEmoji = '🙂';
-        addMessage(quickEmoji, 'me'); 
-        fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-            method: 'POST', 
-            headers: { 'Content-Type': 'application/json' }, 
-            body: JSON.stringify({ chat_id: CHAT_ID, text: quickEmoji })
-        }).catch(err => { showSentStatus('Failed to send emoji', 'error'); });
+        sendMessage('🙂');
     }
+    
+    async function sendMessage(textOverride = null) {
+        const message = textOverride || messageInput.value.trim();
+        const file = fileInput.files[0];
+        if (file) { await sendFile(); return; }
+        if (!message) return;
+        
+        const replyToId = activeReplyMessage ? activeReplyMessage.id : null;
+        
+        let fetchBody = { chat_id: CHAT_ID, text: message };
+        if(activeReplyMessage && activeReplyMessage.telegramMessageId) {
+            fetchBody.reply_parameters = { message_id: activeReplyMessage.telegramMessageId };
+        }
+        
+        const sentMessageData = addMessage(message, 'me', null, null, null, null, Date.now(), replyToId);
+
+        if(!textOverride) {
+            messageInput.value = '';
+            autoResizeTextarea();
+        }
+        cancelReply();
+
+        try {
+            const res = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(fetchBody)
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.description);
+            sentMessageData.telegramMessageId = data.result.message_id;
+            saveChatHistory();
+        } catch(err) {
+            showSentStatus('Failed to send message', 'error');
+        }
+    }
+
 
     function autoResizeTextarea() {
         messageInput.style.height = 'auto';
         messageInput.style.height = `${Math.min(messageInput.scrollHeight, 128)}px`;
     }
-
-    function sendMessage() {
-        const message = messageInput.value.trim();
-        const file = fileInput.files[0];
-        if (file) { sendFile(); return; }
-        if (!message) return;
-        
-        const replyToId = activeReplyMessage ? activeReplyMessage.id : null;
-        let telegramMessageText = message;
-        if(activeReplyMessage) {
-            const repliedToText = (activeReplyMessage.text || "attachment").substring(0, 30);
-            telegramMessageText = `Replying to "${repliedToText}...":\n\n${message}`;
-        }
-        
-        addMessage(message, 'me', null, null, null, null, Date.now(), replyToId);
-        cancelReply();
-        messageInput.value = '';
-        autoResizeTextarea();
-        
-        fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-            method: 'POST', 
-            headers: { 'Content-Type': 'application/json' }, 
-            body: JSON.stringify({ chat_id: CHAT_ID, text: telegramMessageText })
-        }).then(res => res.json()).then(data => { if (!data.ok) throw new Error(data.description); }).catch(err => { showSentStatus('Failed to send message', 'error'); });
-    }
-
-    function sendFile() {
+    
+    async function sendFile() {
         const file = fileInput.files[0];
         if (!file) { showSentStatus('No file selected!', 'error'); return; }
 
@@ -1229,25 +1289,31 @@
         const mediaType = file.type.startsWith('image/') ? 'image' : (file.type.startsWith('video/') ? 'video' : 'document');
         
         const replyToId = activeReplyMessage ? activeReplyMessage.id : null;
-        let telegramCaption = caption;
-        if (activeReplyMessage) {
-            const repliedToText = (activeReplyMessage.text || "attachment").substring(0, 30);
-            telegramCaption = `Replying to "${repliedToText}...":\n\n${caption}`;
-        }
-
-        addMessage(caption, 'me', URL.createObjectURL(file), mediaType, file.name, file.size, Date.now(), replyToId);
+        
+        const sentMessageData = addMessage(caption, 'me', URL.createObjectURL(file), mediaType, file.name, file.size, Date.now(), replyToId);
         cancelReply();
         messageInput.value = '';
         autoResizeTextarea();
 
         const formData = new FormData();
         formData.append("chat_id", CHAT_ID);
+        if (activeReplyMessage && activeReplyMessage.telegramMessageId) {
+            formData.append('reply_parameters', JSON.stringify({ message_id: activeReplyMessage.telegramMessageId }));
+        }
+        
         let endpoint = mediaType === 'image' ? 'sendPhoto' : (mediaType === 'video' ? 'sendVideo' : 'sendDocument');
         formData.append(endpoint.replace('send','').toLowerCase(), file);
-        if (telegramCaption) formData.append('caption', telegramCaption);
+        if (caption) formData.append('caption', caption);
 
-        fetch(`https://api.telegram.org/bot${TOKEN}/${endpoint}`, { method: "POST", body: formData })
-        .then(res => res.json()).then(data => { if (!data.ok) throw new Error(data.description); }).catch(err => { showSentStatus('Upload failed', 'error'); });
+        try {
+            const res = await fetch(`https://api.telegram.org/bot${TOKEN}/${endpoint}`, { method: "POST", body: formData });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.description);
+            sentMessageData.telegramMessageId = data.result.message_id;
+            saveChatHistory();
+        } catch(err) {
+            showSentStatus('Upload failed', 'error');
+        }
         clearFileSelection();
     }
 
@@ -1280,10 +1346,14 @@
         statusText.textContent = 'Checking...';
         statusIcon.className = 'fas fa-circle text-gray-400';
 
-        await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: CHAT_ID, text: "Are you online?" })
-        }).catch(err => console.error(err));
+        try {
+            await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, text: "Are you online?" })
+            });
+        } catch (err) {
+             console.error(err);
+        }
 
         statusCheckTimeout = setTimeout(() => setStatus(false), 30000);
         statusCheckInterval = setInterval(async () => {
@@ -1301,7 +1371,6 @@
         }, 2000);
     }
 
-    // FINAL OPTIMIZED POLLING LOGIC
     let pollRetryDelay = 1000;
     const MAX_POLL_RETRY_DELAY = 30000;
 
@@ -1311,34 +1380,63 @@
             return;
         }
 
-        fetch(`https://api.telegram.org/bot${TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=15`)
+        fetch(`https://api.telegram.org/bot${TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=25&allowed_updates=["message","message_reaction"]`)
             .then(res => res.ok ? res.json() : Promise.reject(new Error(res.statusText)))
             .then(data => {
-                pollRetryDelay = 1000;
+                pollRetryDelay = 1000; 
                 if (data.ok && data.result.length > 0) {
                     data.result.forEach(update => {
                         lastUpdateId = update.update_id;
                         const msg = update.message;
-                        if(msg?.from.id != RUMAISA_ID) return; // Only process messages from Rumaisa
+                        const reaction = update.message_reaction;
 
-                        const text = msg.text || msg.caption || '';
-                        const time = msg.date * 1000;
-                        const fileData = msg.photo?.pop() || msg.video || msg.document;
+                        if(msg && msg.from.id === RUMAISA_ID) {
+                            if (msg.text && msg.text.includes("MESSAGE HAS BEEN DELETED")) return;
+
+                            const text = msg.text || msg.caption || '';
+                            const time = msg.date * 1000;
+                            const fileData = msg.photo?.pop() || msg.video || msg.document;
+                            
+                            let replyToId = null;
+                            if (msg.reply_to_message) {
+                                const originalMessage = chatHistory.find(m => m.telegramMessageId === msg.reply_to_message.message_id);
+                                if (originalMessage) replyToId = originalMessage.id;
+                            }
+                            
+                            if (fileData) {
+                                 fetch(`https://api.telegram.org/bot${TOKEN}/getFile?file_id=${fileData.file_id}`)
+                                 .then(res=>res.json())
+                                 .then(fileInfo => {
+                                    if (!fileInfo.ok) return;
+                                    const url = `https://api.telegram.org/file/bot${TOKEN}/${fileInfo.result.file_path}`;
+                                    const type = msg.photo ? 'image' : (msg.video ? 'video' : 'document');
+                                    addMessage(text, 'rumaisa', url, type, fileData.file_name, fileData.file_size, time, replyToId, msg.message_id);
+                                 });
+                            } else if (text) {
+                                addMessage(text, 'rumaisa', null, null, null, null, time, replyToId, msg.message_id);
+                            }
+                        }
                         
-                        if (fileData) {
-                             fetch(`https://api.telegram.org/bot${TOKEN}/getFile?file_id=${fileData.file_id}`)
-                             .then(res=>res.json())
-                             .then(fileInfo => {
-                                const url = `https://api.telegram.org/file/bot${TOKEN}/${fileInfo.result.file_path}`;
-                                const type = msg.photo ? 'image' : (msg.video ? 'video' : 'document');
-                                addMessage(text, 'rumaisa', url, type, fileData.file_name, fileData.file_size, time);
-                             });
-                        } else if (text) {
-                            addMessage(text, 'rumaisa', null, null, null, null, time);
+                        if(reaction && reaction.user.id === RUMAISA_ID) {
+                            const message = chatHistory.find(m => m.telegramMessageId === reaction.message_id);
+                            if (message) {
+                                const newReactions = {};
+                                reaction.new_reaction.forEach(r => {
+                                    if(r.type === 'emoji') newReactions[r.emoji] = 1;
+                                });
+                                message.reactions = newReactions;
+                                saveChatHistory();
+                                
+                                const messageEl = document.querySelector(`div[data-message-id='${message.id}']`);
+                                if(messageEl) {
+                                    const reactionsContainer = messageEl.querySelector('.reactions-container');
+                                    updateReactionsDisplay(reactionsContainer, message.reactions);
+                                }
+                            }
                         }
                     });
                 }
-                pollMessages(); 
+                setTimeout(pollMessages, 100); 
             })
             .catch(err => {
                 console.error('Polling error:', err);
@@ -1371,6 +1469,27 @@
     deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); deleteMessage(); });
     replyCloseBtn.addEventListener('click', cancelReply);
 
+    document.querySelector('emoji-picker').addEventListener('emoji-click', event => {
+        handleReaction(event.detail.unicode);
+    });
+
+    quickReactions.addEventListener('click', (e) => {
+        if(e.target.closest('#expandReactionsBtn')) {
+            e.stopPropagation();
+            const rect = messageActionMenu.getBoundingClientRect();
+            let top = rect.top - 350; 
+            if(top < 10) top = rect.bottom + 10;
+            let left = rect.left;
+            if(left + 350 > window.innerWidth -10) left = window.innerWidth - 350 -10;
+
+
+            emojiPickerContainer.style.top = `${top}px`;
+            emojiPickerContainer.style.left = `${left}px`;
+            emojiPickerContainer.classList.toggle('hidden');
+        }
+    });
+
+
     // Initial App Load
     populateReactions();
     loadChatHistory();
@@ -1379,4 +1498,4 @@
 </script>
 
 </body>
-</html>
+</html>```
