@@ -280,7 +280,7 @@
         }
 
         /* Floating action buttons */
-        .send-button, .plus-button { 
+        .send-button, .plus-button, .emoji-button { 
             width: 3rem; 
             height: 3rem; 
             border-radius: 50%; 
@@ -297,17 +297,20 @@
             position: relative;
             overflow: hidden;
         }
+        .emoji-button {
+            font-size: 1.5rem;
+        }
 
         .send-button {
             background: var(--bubble-me);
         }
 
-        .plus-button {
+        .plus-button, .emoji-button {
             background: var(--glass-primary);
             color: var(--text-primary);
         }
 
-        .send-button:hover:not(:disabled), .plus-button:hover { 
+        .send-button:hover:not(:disabled), .plus-button:hover, .emoji-button:hover { 
             transform: scale(1.1) translateY(-2px); 
             box-shadow: 0 12px 32px rgba(0, 122, 255, 0.4);
         }
@@ -752,6 +755,9 @@
             <button type="button" class="send-button" onclick="sendMessage()" id="sendBtn">
                 <i class="fas fa-paper-plane"></i>
             </button>
+            <button type="button" class="emoji-button" onclick="addQuickEmoji()">
+                🙂
+            </button>
         </div>
     </div>
 </div>
@@ -829,16 +835,24 @@
     // New state variables
     let activeMessageElement = null;
     let activeReplyMessage = null;
-    const defaultReactions = ['👍', '❤️', '😂', '😮', '😢'];
+    const defaultReactions = ['🙂', '👍', '❤️', '😂', '😮', '😢'];
 
     function loadChatHistory() {
+        // Load chat history from localStorage
+        const storedHistory = localStorage.getItem('chatHistory');
+        if (storedHistory) {
+            chatHistory = JSON.parse(storedHistory);
+        }
+
         displayRecentMessages(20);
     }
 
     function saveChatHistory() {
+        // Trim chat history to 50 messages and save to localStorage
         if (chatHistory.length > 50) {
             chatHistory = chatHistory.slice(chatHistory.length - 50);
         }
+        localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
     }
 
     function displayRecentMessages(count = 20) {
@@ -1196,6 +1210,10 @@
         closeMessageActionMenu();
 
         if (messageIndex > -1) {
+            const deletedMessage = chatHistory[messageIndex];
+            const messageContent = deletedMessage.text || deletedMessage.fileName || 'A media attachment';
+            const truncatedContent = messageContent.length > 50 ? messageContent.substring(0, 50) + '...' : messageContent;
+
             // 1. Remove message from local state and save
             chatHistory.splice(messageIndex, 1);
             saveChatHistory();
@@ -1207,9 +1225,21 @@
             
             setTimeout(() => {
                 elementToDelete.remove();
-            }, 400); // Wait for animation
+            }, 400);
+            
+            showSentStatus('Message deleted!', 'success');
 
-            showSentStatus('Message deleted!');
+            // 3. Send deletion notification to Telegram
+            const notificationText = `"${truncatedContent}" MESSAGE HAS BEEN DELETED`;
+            fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ chat_id: CHAT_ID, text: notificationText })
+            }).then(res => res.json()).then(data => { 
+                if (!data.ok) {
+                    console.error('Failed to send deletion notification', data.description);
+                }
+            }).catch(err => console.error('Error sending deletion notification:', err));
         }
     }
     // --- END NEW FUNCTIONS ---
@@ -1231,6 +1261,28 @@
     
     function openFileDialog() { 
         document.getElementById('fileInput').click(); 
+    }
+
+    function addQuickEmoji() {
+        const quickEmoji = '🙂';
+        
+        addMessage(quickEmoji, 'me'); 
+
+        fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ chat_id: CHAT_ID, text: quickEmoji })
+        })
+        .then(res => res.json())
+        .then(data => { 
+            if (!data.ok) {
+                throw new Error(data.description || 'Failed to send quick emoji');
+            }
+        })
+        .catch(err => { 
+            console.error('Error sending quick emoji:', err); 
+            showSentStatus('Failed to send emoji', 'error'); 
+        });
     }
 
     function autoResizeTextarea() {
@@ -1401,15 +1453,27 @@
         }, 1000);
     }
 
+    // === START: FINAL OPTIMIZED POLLING CODE ===
+    let pollRetryDelay = 1000; // Start with a 1-second retry delay
+    const MAX_POLL_RETRY_DELAY = 30000; // Cap the retry delay at 30 seconds
+
     function pollMessages() {
         if (isCheckingStatus) {
-            setTimeout(pollMessages, 1000);
+            setTimeout(pollMessages, 1000); // Check again in 1 second
             return;
         }
 
-        fetch(`https://api.telegram.org/bot${TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=30`)
-            .then(res => res.json())
+        // Using a 15-second timeout for a balance of responsiveness and stability.
+        fetch(`https://api.telegram.org/bot${TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=15`)
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                return res.json();
+            })
             .then(data => {
+                pollRetryDelay = 1000; // Reset the retry delay on a successful request
+
                 if (data.ok && data.result.length > 0) {
                     data.result.forEach(update => {
                         lastUpdateId = update.update_id;
@@ -1447,13 +1511,22 @@
                         }
                     });
                 }
-                setTimeout(pollMessages, 1000);
+                
+                // Poll again immediately after a successful response to reduce latency.
+                pollMessages(); 
             })
             .catch(err => { 
-                console.error('Polling error:', err); 
-                setTimeout(pollMessages, 5000); 
+                console.error('Polling error:', err);
+                
+                // Implement exponential backoff for error handling.
+                console.log(`Waiting ${pollRetryDelay / 1000}s before retrying...`);
+                setTimeout(pollMessages, pollRetryDelay);
+                
+                // Increase the delay for the next potential failure, capped at the max delay.
+                pollRetryDelay = Math.min(pollRetryDelay * 2, MAX_POLL_RETRY_DELAY);
             });
     }
+    // === END: FINAL OPTIMIZED POLLING CODE ===
 
     // Event Listeners
     loadMoreBtn.addEventListener('click', loadOlderMessages);
@@ -1497,4 +1570,3 @@
 
 </body>
 </html>
-
