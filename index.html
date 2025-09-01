@@ -1436,7 +1436,9 @@
                         }
                     });
                 }
-                setTimeout(pollMessages, 100); 
+                // Long polling with 30 sec max wait
+const nextPollDelay = data && data.length > 0 ? 0 : 30000; // instant if new message, else wait 30 sec
+setTimeout(pollMessages, nextPollDelay);
             })
             .catch(err => {
                 console.error('Polling error:', err);
