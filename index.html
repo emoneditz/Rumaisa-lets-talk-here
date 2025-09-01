@@ -1436,8 +1436,11 @@
                         }
                     });
                 }
-                // Long polling with 30 sec max wait
-const nextPollDelay = data && data.length > 0 ? 0 : 30000; // instant if new message, else wait 30 sec
+                // Long polling: instant if Rumaisa sends message/reaction, else 30 sec wait
+const hasNewData = (data && data.length > 0) || 
+                   (reactions && reactions.some(r => r.user.id === RUMAISA_ID));
+
+const nextPollDelay = hasNewData ? 0 : 30000; // 0 = instant, 30000 = 30 sec
 setTimeout(pollMessages, nextPollDelay);
             })
             .catch(err => {
