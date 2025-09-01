@@ -21,7 +21,7 @@
             --text-primary: rgba(255, 255, 255, 0.9);
             --text-secondary: rgba(255, 255, 255, 0.7);
             /* Reduced blur radius from 40px to 15px and removed saturate() */
-            --backdrop-blur: blur(8px);
+            --backdrop-blur: blur(5px);
         }
 
         * {
@@ -67,7 +67,7 @@
             -webkit-backdrop-filter: var(--backdrop-blur);
             border-bottom: 1px solid var(--glass-border);
             color: var(--text-primary);
-            padding: 1.5rem 1rem 1rem;
+            padding: 1.25rem 1rem;
             text-align: center;
             box-shadow: var(--glass-shadow);
             z-index: 30;
@@ -90,6 +90,34 @@
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
             animation: shimmer 3s ease-in-out infinite;
         }
+        
+        /* UPDATED: Single Signal Light Styles */
+        #signal-light {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: currentColor;
+            transition: color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 0 10px 2px currentColor;
+        }
+        #signal-light.red { color: #ef4444; }
+        #signal-light.yellow { color: #facc15; }
+        #signal-light.green { color: #10b981; }
+
+        /* UPDATED: Profile Link Style */
+        .profile-link {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+        .profile-link:hover {
+            color: var(--text-primary);
+        }
+
 
         @keyframes shimmer {
             0%, 100% { opacity: 0; transform: translateX(-100%); }
@@ -147,7 +175,6 @@
             box-shadow: 0 10px 24px 0 rgba(31, 38, 135, 0.45);
         }
         
-        /* --- OPTIMIZATION APPLIED: Removed expensive `filter: blur()` from animation --- */
         @keyframes liquidAppear {
             from { 
                 transform: translateY(1.5rem) scale(0.9); 
@@ -167,16 +194,23 @@
             margin-left: 1rem;
             color: var(--text-secondary);
         }
-
+        
+        /* TWEAKED: Flexible bubble content */
         .media { 
+            display: block;
             max-width: 100%; 
             border-radius: 1.25rem; 
-            margin: 0.5rem 0; 
+            margin: 0; /* Let bubble padding handle space */
             cursor: pointer; 
             object-fit: cover; 
             box-shadow: 0 8px 24px rgba(0,0,0,0.2);
             transition: all 0.3s ease;
             border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* TWEAKED: Space between media and caption */
+        .message .media + .message-text-content {
+            margin-top: 0.75rem;
         }
 
         .media:hover {
@@ -185,10 +219,11 @@
         }
 
         .media-video { 
+            display: block;
             width: 100%; 
             max-height: 280px; 
             border-radius: 1.25rem; 
-            margin: 0.5rem 0; 
+            margin: 0;
             box-shadow: 0 8px 24px rgba(0,0,0,0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -322,45 +357,7 @@
             cursor: not-allowed; 
             box-shadow: none; 
         }
-
-        /* Status button with liquid glass */
-        .status-button {
-            background: var(--glass-primary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
-            border: 1px solid var(--glass-border);
-            color: var(--text-primary);
-            padding: 0.75rem 1.5rem;
-            border-radius: 2rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: var(--glass-shadow);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .status-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: left 0.5s;
-        }
-
-        .status-button:hover::before {
-            left: 100%;
-        }
-
-        .status-button:hover {
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 12px 32px rgba(0, 122, 255, 0.3);
-            border-color: rgba(0, 122, 255, 0.4);
-        }
-
-        /* File info bar & Reply Bar */
+        
         .file-info-bar {
             display: none;
             width: 100%;
@@ -381,7 +378,6 @@
             display: flex;
         }
         
-        /* --- OPTIMIZATION APPLIED: Lighter animation for File Info Bar --- */
         @keyframes liquidSlideIn {
             from { 
                 opacity: 0; 
@@ -393,7 +389,6 @@
             }
         }
 
-        /* Notification with enhanced glass */
         #sentNotification {
             position: fixed;
             top: -100px;
@@ -428,7 +423,6 @@
             100% { transform: translateX(-50%) scale(1); }
         }
 
-        /* Load more button */
         .load-more {
             background: var(--glass-primary);
             backdrop-filter: var(--backdrop-blur);
@@ -449,7 +443,6 @@
             box-shadow: 0 12px 32px rgba(0, 122, 255, 0.2);
         }
 
-        /* Modal with liquid glass */
         .modal-container { 
             display: none; 
             position: fixed; 
@@ -512,7 +505,6 @@
             background: rgba(255, 59, 48, 0.8);
         }
 
-        /* Date separator */
         .date-separator span {
             background: var(--glass-primary);
             backdrop-filter: var(--backdrop-blur);
@@ -526,25 +518,20 @@
             box-shadow: var(--glass-shadow);
         }
 
-        /* Scrollbar styling for webkit browsers */
         .chat-box::-webkit-scrollbar {
             width: 4px;
         }
-
         .chat-box::-webkit-scrollbar-track {
             background: transparent;
         }
-
         .chat-box::-webkit-scrollbar-thumb {
             background: var(--glass-border);
             border-radius: 2px;
         }
-
         .chat-box::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.4);
         }
 
-        /* Enhanced file message */
         .file-message { 
             display: flex; 
             align-items: center; 
@@ -559,7 +546,6 @@
             border: 1px solid var(--glass-border);
             box-shadow: var(--glass-shadow);
         }
-
         .file-message:hover { 
             transform: translateY(-2px) scale(1.02);
             box-shadow: 0 12px 32px rgba(0, 122, 255, 0.2);
@@ -657,7 +643,6 @@
             background-color: rgba(255, 255, 255, 0.1);
         }
 
-        /* ADDED: Emoji Picker Styles */
         #emojiPickerContainer {
             position: absolute;
             z-index: 102;
@@ -676,52 +661,29 @@
             -webkit-backdrop-filter: var(--backdrop-blur);
         }
 
-        /* Responsive adjustments */
         @media (max-width: 768px) {
-            .message {
-                max-width: 85%;
-                padding: 0.875rem 1rem;
-            }
-            
-            .chat-header {
-                padding: 1rem 0.75rem 0.75rem;
-            }
-            
-            .input-box {
-                padding: 0.5rem;
-            }
+            .message { max-width: 85%; padding: 0.875rem 1rem; }
+            .chat-header { padding: 1rem 0.75rem; }
+            .input-box { padding: 0.5rem; }
         }
 
-        .message-input:focus {
-            outline: none;
-        }
-
-        /* Helps browser optimize rendering for elements that will be animated */
-        .message, .send-button, .plus-button, .status-button, .file-info-bar, .modal-content {
+        .message-input:focus { outline: none; }
+        .message, .send-button, .plus-button, .file-info-bar, .modal-content {
             will-change: transform, opacity;
         }
-
-        /* Status indicator colors */
-        .text-green-500 { color: #10b981; }
-        .text-red-500 { color: #ef4444; }
-        .text-gray-400 { color: rgba(255, 255, 255, 0.4); }
-        .text-gray-500 { color: rgba(255, 255, 255, 0.5); }
     </style>
 </head>
 <body>
 
 <div class="chat-container">
     <div class="chat-header">
-        <h3 class="font-bold text-xl tracking-wide mb-2">Hello boin 🙂 Apni nachte paren? </h3>
-        <div class="text-sm font-semibold flex items-center gap-3">
-            <button id="statusBtn" class="status-button">
-                <i class="fas fa-pulse mr-2"></i>Click here to see Online
-            </button>
-            <span id="statusIndicator" class="hidden flex items-center gap-2">
-                <i id="statusIcon" class="fas fa-circle text-gray-400"></i>
-                <span id="statusText" class="text-gray-500">Offline</span>
-            </span>
+        <div class="flex items-center justify-center gap-3 mb-1">
+            <h3 class="font-bold text-xl tracking-wide">Emon</h3>
+            <span id="signal-light"></span>
         </div>
+        <a href="https://emoneditz.github.io/about-me/" target="_blank" class="profile-link">
+            <i class="fas fa-user-circle mr-1"></i> View Profile
+        </a>
     </div>
 
     <div class="chat-box" id="chatBox">
@@ -828,11 +790,7 @@
     const sentNotification = document.getElementById('sentNotification');
     const sentMessage = document.getElementById('sentMessage');
     const sentIcon = document.getElementById('sentIcon');
-    const statusBtn = document.getElementById('statusBtn');
-    const statusIndicator = document.getElementById('statusIndicator');
-    const statusIcon = document.getElementById('statusIcon');
-    const statusText = document.getElementById('statusText');
-
+    
     const messageActionMenu = document.getElementById('messageActionMenu');
     const quickReactions = document.getElementById('quickReactions');
     const replyBtn = document.getElementById('replyBtn');
@@ -849,14 +807,21 @@
     let isLoadingHistory = false;
     let lastUpdateId = 0;
     let initialLoadComplete = false;
-    let isCheckingStatus = false;
-    let statusCheckInterval = null;
-    let statusCheckTimeout = null;
     
     let activeMessageElement = null;
     let activeReplyMessage = null;
-    // UPDATED: Emoji changed from 😂 to 🤣
     const defaultReactions = ['🤣', '❤️', '👍', '👎', '🔥', '🥰'];
+    
+    let replyTimer = null; 
+    let isConnectionActive = false; // Tracks if the connection has been confirmed
+    
+    function setSignalLight(color) {
+        const light = document.getElementById('signal-light');
+        light.className = ''; // Clear existing color classes
+        if (color) {
+            light.classList.add(color);
+        }
+    }
 
     function loadChatHistory() {
         const storedHistory = localStorage.getItem('chatHistory');
@@ -1245,6 +1210,12 @@
         if (file) { await sendFile(); return; }
         if (!message) return;
         
+        if (!isConnectionActive) {
+            clearTimeout(replyTimer);
+            setSignalLight('yellow');
+            replyTimer = setTimeout(() => { setSignalLight('red'); }, 30000);
+        }
+        
         const replyToId = activeReplyMessage ? activeReplyMessage.id : null;
         
         let fetchBody = { chat_id: CHAT_ID, text: message };
@@ -1271,6 +1242,9 @@
             sentMessageData.telegramMessageId = data.result.message_id;
             saveChatHistory();
         } catch(err) {
+            isConnectionActive = false;
+            clearTimeout(replyTimer);
+            setSignalLight('red');
             showSentStatus('Failed to send message', 'error');
         }
     }
@@ -1284,6 +1258,12 @@
     async function sendFile() {
         const file = fileInput.files[0];
         if (!file) { showSentStatus('No file selected!', 'error'); return; }
+
+        if (!isConnectionActive) {
+            clearTimeout(replyTimer);
+            setSignalLight('yellow');
+            replyTimer = setTimeout(() => { setSignalLight('red'); }, 30000);
+        }
 
         const caption = messageInput.value.trim();
         const mediaType = file.type.startsWith('image/') ? 'image' : (file.type.startsWith('video/') ? 'video' : 'document');
@@ -1312,6 +1292,9 @@
             sentMessageData.telegramMessageId = data.result.message_id;
             saveChatHistory();
         } catch(err) {
+            isConnectionActive = false;
+            clearTimeout(replyTimer);
+            setSignalLight('red');
             showSentStatus('Upload failed', 'error');
         }
         clearFileSelection();
@@ -1327,82 +1310,37 @@
         updateSendButton();
     }
 
-    function setStatus(online) {
-        statusText.textContent = online ? 'Online' : 'Offline';
-        statusIcon.className = `fas fa-circle ${online ? 'text-green-500' : 'text-red-500'}`;
-        statusBtn.disabled = false;
-        statusBtn.innerHTML = '<i class="fas fa-pulse mr-2"></i>Check Online Status';
-        isCheckingStatus = false;
-        clearTimeout(statusCheckTimeout);
-        clearInterval(statusCheckInterval);
-    }
-    
-    async function checkStatus() {
-        if (isCheckingStatus) return;
-        isCheckingStatus = true;
-        statusBtn.disabled = true;
-        statusBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Checking...';
-        statusIndicator.classList.remove('hidden');
-        statusText.textContent = 'Checking...';
-        statusIcon.className = 'fas fa-circle text-gray-400';
-
-        try {
-            await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: CHAT_ID, text: "Are you online?" })
-            });
-        } catch (err) {
-             console.error(err);
-        }
-
-        statusCheckTimeout = setTimeout(() => setStatus(false), 30000);
-        statusCheckInterval = setInterval(async () => {
-            try {
-                const res = await fetch(`https://api.telegram.org/bot${TOKEN}/getUpdates?offset=${lastUpdateId + 1}`);
-                const data = await res.json();
-                if (data.ok && data.result.length > 0) {
-                    const onlineMessage = data.result.find(u => u.message?.from.id == RUMAISA_ID && /yes|yeah|i am online/i.test(u.message.text));
-                    if(onlineMessage) {
-                        lastUpdateId = onlineMessage.update_id;
-                        setStatus(true);
-                    }
-                }
-            } catch (error) { console.error(error); }
-        }, 2000);
-    }
-
     let pollRetryDelay = 1000;
     const MAX_POLL_RETRY_DELAY = 30000;
 
     function pollMessages() {
-        if (isCheckingStatus) {
-            setTimeout(pollMessages, 1000);
-            return;
-        }
-
         fetch(`https://api.telegram.org/bot${TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=25&allowed_updates=["message","message_reaction"]`)
             .then(res => res.ok ? res.json() : Promise.reject(new Error(res.statusText)))
             .then(data => {
                 pollRetryDelay = 1000; 
                 if (data.ok && data.result.length > 0) {
+                    let hadUpdateFromRumaisa = false;
                     data.result.forEach(update => {
                         lastUpdateId = update.update_id;
                         const msg = update.message;
                         const reaction = update.message_reaction;
+                        
+                        const isRelevantUpdate = (msg && msg.from.id === RUMAISA_ID) || (reaction && reaction.user.id === RUMAISA_ID);
+
+                        if(isRelevantUpdate){
+                           hadUpdateFromRumaisa = true;
+                        }
 
                         if(msg && msg.from.id === RUMAISA_ID) {
                             if (msg.text && msg.text.includes("MESSAGE HAS BEEN DELETED")) return;
-
                             const text = msg.text || msg.caption || '';
                             const time = msg.date * 1000;
                             const fileData = msg.photo?.pop() || msg.video || msg.document;
-                            
                             let replyToId = null;
                             if (msg.reply_to_message) {
                                 const originalMessage = chatHistory.find(m => m.telegramMessageId === msg.reply_to_message.message_id);
                                 if (originalMessage) replyToId = originalMessage.id;
                             }
-                            
                             if (fileData) {
                                  fetch(`https://api.telegram.org/bot${TOKEN}/getFile?file_id=${fileData.file_id}`)
                                  .then(res=>res.json())
@@ -1435,15 +1373,19 @@
                             }
                         }
                     });
-                }
-                // Long polling: instant if Rumaisa sends message/reaction, else 30 sec wait
-const hasNewData = (data && data.length > 0) || 
-                   (reactions && reactions.some(r => r.user.id === RUMAISA_ID));
 
-const nextPollDelay = hasNewData ? 0 : 30000; // 0 = instant, 30000 = 30 sec
-setTimeout(pollMessages, nextPollDelay);
+                    if (hadUpdateFromRumaisa) {
+                         isConnectionActive = true;
+                         clearTimeout(replyTimer);
+                         setSignalLight('green');
+                    }
+                }
+                setTimeout(pollMessages, 1000);
             })
             .catch(err => {
+                isConnectionActive = false;
+                clearTimeout(replyTimer);
+                setSignalLight('red');
                 console.error('Polling error:', err);
                 setTimeout(pollMessages, pollRetryDelay);
                 pollRetryDelay = Math.min(pollRetryDelay * 2, MAX_POLL_RETRY_DELAY);
@@ -1454,7 +1396,6 @@ setTimeout(pollMessages, nextPollDelay);
     loadMoreBtn.addEventListener('click', loadOlderMessages);
     messageInput.addEventListener('input', () => { autoResizeTextarea(); updateSendButton(); });
     messageInput.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
-    statusBtn.addEventListener('click', checkStatus);
     fileInput.addEventListener('change', e => {
         const file = e.target.files[0];
         if (file) {
@@ -1500,7 +1441,8 @@ setTimeout(pollMessages, nextPollDelay);
     loadChatHistory();
     pollMessages();
     updateSendButton();
+    setSignalLight('yellow'); 
 </script>
 
 </body>
-</html>```
+</html>
