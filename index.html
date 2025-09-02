@@ -9,19 +9,16 @@
     <!-- Emoji Picker Library -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
     <style>
-        /* --- OPTIMIZATION APPLIED: Reduced GPU Load for Low-End Devices --- */
+        /* --- FULL OPTIMIZATION APPLIED: Replaced ALL GPU-heavy blur with fake glass effect --- */
         :root {
-            --glass-primary: rgba(255, 255, 255, 0.1);
+            --glass-primary: rgba(255, 255, 255, 0.08);
             --glass-secondary: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.2);
-            /* Reduced shadow spread from 32px to 16px */
             --glass-shadow: 0 6px 16px 0 rgba(31, 38, 135, 0.35); 
             --bubble-me: rgba(0, 122, 255, 0.8);
             --bubble-rumaisa: rgba(255, 255, 255, 0.15);
             --text-primary: rgba(255, 255, 255, 0.9);
             --text-secondary: rgba(255, 255, 255, 0.7);
-            /* Reduced blur radius from 40px to 15px and removed saturate() */
-            --backdrop-blur: blur(1px);
         }
 
         * {
@@ -53,8 +50,6 @@
             flex-direction: column;
             overflow: hidden;
             background: var(--glass-primary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
             border: 1px solid var(--glass-border);
             position: relative;
             z-index: 1;
@@ -63,8 +58,6 @@
         /* Liquid Glass Header */
         .chat-header {
             background: var(--glass-primary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
             border-bottom: 1px solid var(--glass-border);
             color: var(--text-primary);
             padding: 1.25rem 1rem;
@@ -91,7 +84,6 @@
             animation: shimmer 3s ease-in-out infinite;
         }
         
-        /* UPDATED: Single Signal Light Styles */
         #signal-light {
             width: 16px;
             height: 16px;
@@ -104,7 +96,6 @@
         #signal-light.yellow { color: #facc15; }
         #signal-light.green { color: #10b981; }
 
-        /* UPDATED: Profile Link Style */
         .profile-link {
             font-size: 0.8rem;
             font-weight: 500;
@@ -117,7 +108,6 @@
         .profile-link:hover {
             color: var(--text-primary);
         }
-
 
         @keyframes shimmer {
             0%, 100% { opacity: 0; transform: translateX(-100%); }
@@ -146,9 +136,7 @@
             position: relative;
             animation: liquidAppear 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             white-space: pre-wrap;
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
-            border: 1px solid var(--glass-border);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             transition: all 0.3s ease;
             user-select: none;
             cursor: pointer;
@@ -176,14 +164,8 @@
         }
         
         @keyframes liquidAppear {
-            from { 
-                transform: translateY(1.5rem) scale(0.9); 
-                opacity: 0;
-            }
-            to { 
-                transform: translateY(0) scale(1); 
-                opacity: 1;
-            }
+            from { transform: translateY(1.5rem) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
         }
 
         .message-time { 
@@ -195,36 +177,21 @@
             color: var(--text-secondary);
         }
         
-        /* TWEAKED: Flexible bubble content */
         .media { 
-            display: block;
-            max-width: 100%; 
-            border-radius: 1.25rem; 
-            margin: 0; /* Let bubble padding handle space */
-            cursor: pointer; 
-            object-fit: cover; 
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: block; max-width: 100%; border-radius: 1.25rem; margin: 0;
+            cursor: pointer; object-fit: cover; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            transition: all 0.3s ease; border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        /* TWEAKED: Space between media and caption */
         .message .media + .message-text-content {
             margin-top: 0.75rem;
         }
-
         .media:hover {
             transform: scale(1.05);
             box-shadow: 0 12px 32px rgba(0,0,0,0.3);
         }
-
         .media-video { 
-            display: block;
-            width: 100%; 
-            max-height: 280px; 
-            border-radius: 1.25rem; 
-            margin: 0;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            display: block; width: 100%; max-height: 280px; border-radius: 1.25rem; 
+            margin: 0; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
@@ -240,8 +207,6 @@
             align-items: center;
             padding: 0.75rem;
             background: var(--glass-primary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
             border-top: 1px solid var(--glass-border);
             flex-shrink: 0;
             z-index: 50;
@@ -251,100 +216,49 @@
         }
 
         .input-box::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
         }
 
         .input-content-wrapper { 
-            display: flex; 
-            align-items: flex-end; 
-            width: 100%; 
-            max-width: 800px; 
-            gap: 0.75rem; 
-            padding: 0 0.5rem; 
+            display: flex; align-items: flex-end; width: 100%; max-width: 800px; 
+            gap: 0.75rem; padding: 0 0.5rem; 
         }
 
-        .input-area-container {
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            gap: 0.5rem;
-        }
+        .input-area-container { display: flex; flex-direction: column; flex-grow: 1; gap: 0.5rem; }
 
-        /* Enhanced glass input */
         .message-input-wrapper { 
-            flex: 1; 
-            display: flex; 
-            align-items: center; 
+            flex: 1; display: flex; align-items: center; 
             background: var(--glass-secondary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
             border-radius: 2rem; 
             border: 1px solid var(--glass-border);
             min-height: 3rem; 
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1), var(--glass-shadow);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            transition: all 0.3s ease; position: relative; overflow: hidden;
         }
-
         .message-input-wrapper:focus-within {
             border-color: rgba(0, 122, 255, 0.5);
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1), 0 0 0 2px rgba(0, 122, 255, 0.2);
         }
 
         .message-input { 
-            flex: 1; 
-            border: none; 
-            background: transparent; 
-            padding: 0.75rem 1rem; 
-            font-size: 1rem; 
-            outline: none; 
-            resize: none; 
-            max-height: 8rem;
-            color: var(--text-primary);
-            font-family: inherit;
+            flex: 1; border: none; background: transparent; 
+            padding: 0.75rem 1rem; font-size: 1rem; outline: none; resize: none; 
+            max-height: 8rem; color: var(--text-primary); font-family: inherit;
         }
+        .message-input::placeholder { color: var(--text-secondary); }
 
-        .message-input::placeholder {
-            color: var(--text-secondary);
-        }
-
-        /* Floating action buttons */
         .send-button, .plus-button, .emoji-button { 
-            width: 3rem; 
-            height: 3rem; 
-            border-radius: 50%; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            color: white; 
-            font-size: 1.25rem; 
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            box-shadow: var(--glass-shadow);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
-            position: relative;
-            overflow: hidden;
+            width: 3rem; height: 3rem; border-radius: 50%; display: flex; 
+            justify-content: center; align-items: center; color: white; 
+            font-size: 1.25rem; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            box-shadow: var(--glass-shadow); border: 1px solid var(--glass-border);
+            position: relative; overflow: hidden;
         }
-        .emoji-button {
-            font-size: 1.5rem;
-        }
+        .emoji-button { font-size: 1.5rem; }
 
-        .send-button {
-            background: var(--bubble-me);
-        }
-
-        .plus-button, .emoji-button {
-            background: var(--glass-primary);
-            color: var(--text-primary);
-        }
+        .send-button { background: var(--bubble-me); }
+        .plus-button, .emoji-button { background: var(--glass-primary); color: var(--text-primary); }
 
         .send-button:hover:not(:disabled), .plus-button:hover, .emoji-button:hover { 
             transform: scale(1.1) translateY(-2px); 
@@ -352,70 +266,35 @@
         }
 
         .send-button:disabled { 
-            background: var(--glass-secondary); 
-            color: var(--text-secondary); 
-            cursor: not-allowed; 
-            box-shadow: none; 
+            background: var(--glass-secondary); color: var(--text-secondary); 
+            cursor: not-allowed; box-shadow: none; 
         }
         
         .file-info-bar {
-            display: none;
-            width: 100%;
-            padding: 0.75rem 1rem;
+            display: none; width: 100%; padding: 0.75rem 1rem;
             background: var(--glass-secondary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
-            border-radius: 1.25rem;
-            align-items: center;
-            justify-content: space-between;
+            border-radius: 1.25rem; align-items: center; justify-content: space-between;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: var(--glass-shadow);
-            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow); border: 1px solid var(--glass-border);
             animation: liquidSlideIn 0.4s ease-out;
         }
-
-        .file-info-bar.show {
-            display: flex;
-        }
-        
+        .file-info-bar.show { display: flex; }
         @keyframes liquidSlideIn {
-            from { 
-                opacity: 0; 
-                transform: translateY(1rem) scale(0.95);
-            }
-            to { 
-                opacity: 1; 
-                transform: translateY(0) scale(1);
-            }
+            from { opacity: 0; transform: translateY(1rem) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         #sentNotification {
-            position: fixed;
-            top: -100px;
-            left: 50%;
-            transform: translateX(-50%);
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
             padding: 1rem 2rem;
             background: var(--glass-primary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
-            border: 1px solid var(--glass-border);
-            border-radius: 2rem;
-            box-shadow: var(--glass-shadow);
-            color: var(--text-primary);
-            font-weight: 600;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            opacity: 0;
+            border: 1px solid var(--glass-border); border-radius: 2rem;
+            box-shadow: var(--glass-shadow); color: var(--text-primary); font-weight: 600;
+            z-index: 100; display: flex; align-items: center; gap: 0.75rem;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0;
         }
 
-        #sentNotification.show {
-            top: 2rem;
-            opacity: 1;
-            animation: notificationPulse 0.6s ease-out;
-        }
+        #sentNotification.show { top: 2rem; opacity: 1; animation: notificationPulse 0.6s ease-out; }
 
         @keyframes notificationPulse {
             0% { transform: translateX(-50%) scale(0.8); }
@@ -425,50 +304,23 @@
 
         .load-more {
             background: var(--glass-primary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
-            border: 1px solid var(--glass-border);
-            color: var(--text-primary);
-            padding: 0.75rem 1.5rem;
-            border-radius: 1.5rem;
-            margin: 1rem auto;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: var(--glass-shadow);
-            text-align: center;
+            border: 1px solid var(--glass-border); color: var(--text-primary);
+            padding: 0.75rem 1.5rem; border-radius: 1.5rem; margin: 1rem auto;
+            cursor: pointer; transition: all 0.3s ease; box-shadow: var(--glass-shadow); text-align: center;
         }
 
-        .load-more:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 12px 32px rgba(0, 122, 255, 0.2);
-        }
+        .load-more:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 12px 32px rgba(0, 122, 255, 0.2); }
 
         .modal-container { 
-            display: none; 
-            position: fixed; 
-            z-index: 100; 
-            left: 0; 
-            top: 0; 
-            width: 100%; 
-            height: 100%; 
-            overflow: auto; 
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            justify-content: center; 
-            align-items: center; 
-            animation: modalFadeIn 0.3s ease-out; 
+            display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; 
+            overflow: auto; background: rgba(0, 0, 0, 0.8);
+            justify-content: center; align-items: center; animation: modalFadeIn 0.3s ease-out; 
         }
 
-        @keyframes modalFadeIn {
-            from { opacity: 0; backdrop-filter: blur(0); }
-            to { opacity: 1; backdrop-filter: blur(10px); }
-        }
+        @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .modal-content { 
-            max-width: 90vw; 
-            max-height: 90vh; 
-            border-radius: 1rem;
+            max-width: 90vw; max-height: 90vh; border-radius: 1rem;
             box-shadow: var(--glass-shadow);
             animation: modalZoom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
         }
@@ -479,176 +331,65 @@
         }
 
         .close-modal-btn { 
-            position: absolute; 
-            top: 1rem; 
-            right: 2rem; 
-            color: white; 
-            font-size: 2rem; 
-            font-weight: bold; 
-            cursor: pointer;
+            position: absolute; top: 1rem; right: 2rem; color: white; font-size: 2rem; 
+            font-weight: bold; cursor: pointer;
             background: var(--glass-primary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
-            border: 1px solid var(--glass-border);
-            border-radius: 50%;
-            width: 3rem;
-            height: 3rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--glass-shadow);
-            transition: all 0.3s ease;
+            border: 1px solid var(--glass-border); border-radius: 50%;
+            width: 3rem; height: 3rem; display: flex; align-items: center; justify-content: center;
+            box-shadow: var(--glass-shadow); transition: all 0.3s ease;
         }
 
-        .close-modal-btn:hover {
-            transform: scale(1.1) rotate(90deg);
-            background: rgba(255, 59, 48, 0.8);
-        }
+        .close-modal-btn:hover { transform: scale(1.1) rotate(90deg); background: rgba(255, 59, 48, 0.8); }
 
         .date-separator span {
             background: var(--glass-primary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
             border: 1px solid var(--glass-border);
             color: var(--text-secondary);
-            padding: 0.5rem 1rem;
-            border-radius: 1rem;
-            font-size: 0.75rem;
-            font-weight: 600;
+            padding: 0.5rem 1rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;
             box-shadow: var(--glass-shadow);
         }
 
-        .chat-box::-webkit-scrollbar {
-            width: 4px;
-        }
-        .chat-box::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .chat-box::-webkit-scrollbar-thumb {
-            background: var(--glass-border);
-            border-radius: 2px;
-        }
-        .chat-box::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.4);
-        }
+        .chat-box::-webkit-scrollbar { width: 4px; }
+        .chat-box::-webkit-scrollbar-track { background: transparent; }
+        .chat-box::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 2px; }
+        .chat-box::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
 
         .file-message { 
-            display: flex; 
-            align-items: center; 
-            padding: 1rem; 
+            display: flex; align-items: center; padding: 1rem; 
             background: var(--glass-secondary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
-            border-radius: 1rem; 
-            margin: 0.5rem 0; 
-            cursor: pointer; 
-            transition: all 0.3s ease;
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--glass-shadow);
+            border-radius: 1rem; margin: 0.5rem 0; cursor: pointer; transition: all 0.3s ease;
+            border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
         }
-        .file-message:hover { 
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 12px 32px rgba(0, 122, 255, 0.2);
-        }
-
-        .file-icon { 
-            font-size: 1.5rem; 
-            margin-right: 0.75rem; 
-            color: var(--text-primary);
-        }
-
-        .reply-preview {
-            padding: 0.5rem 0.75rem;
-            margin-bottom: 0.5rem;
-            border-radius: 0.75rem;
-            background: rgba(0,0,0,0.1);
-            display: flex;
-            gap: 0.5rem;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .reply-bar {
-            width: 2px;
-            background-color: var(--bubble-me);
-            border-radius: 1px;
-            flex-shrink: 0;
-        }
-        .message.rumaisa .reply-bar {
-            background-color: var(--text-secondary);
-        }
-        .reply-content {
-            font-size: 0.8rem;
-            line-height: 1.2;
-            overflow: hidden;
-        }
-        .reply-sender {
-            font-weight: 600;
-            color: var(--bubble-me);
-        }
-        .message.rumaisa .reply-sender {
-            color: var(--text-primary);
-        }
-        .reply-text {
-            opacity: 0.8;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        .file-message:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 12px 32px rgba(0, 122, 255, 0.2); }
+        .file-icon { font-size: 1.5rem; margin-right: 0.75rem; color: var(--text-primary); }
+        .reply-preview { padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; border-radius: 0.75rem; background: rgba(0,0,0,0.1); display: flex; gap: 0.5rem; border: 1px solid rgba(255,255,255,0.05); }
+        .reply-bar { width: 2px; background-color: var(--bubble-me); border-radius: 1px; flex-shrink: 0; }
+        .message.rumaisa .reply-bar { background-color: var(--text-secondary); }
+        .reply-content { font-size: 0.8rem; line-height: 1.2; overflow: hidden; }
+        .reply-sender { font-weight: 600; color: var(--bubble-me); }
+        .message.rumaisa .reply-sender { color: var(--text-primary); }
+        .reply-text { opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
         .reactions-container {
-            position: absolute;
-            bottom: -0.75rem;
-            right: 0.75rem;
-            display: flex;
-            gap: 0.25rem;
+            position: absolute; bottom: -0.75rem; right: 0.75rem; display: flex; gap: 0.25rem;
             background: var(--glass-secondary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
-            padding: 0.25rem 0.5rem;
-            border-radius: 1rem;
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--glass-shadow);
-            transform: scale(0);
+            padding: 0.25rem 0.5rem; border-radius: 1rem; border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow); transform: scale(0);
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform-origin: bottom right;
-            z-index: 10;
+            transform-origin: bottom right; z-index: 10;
         }
-        .message.me .reactions-container {
-            right: auto;
-            left: 0.75rem;
-            transform-origin: bottom left;
-        }
-        .reactions-container.visible {
-            transform: scale(1);
-        }
-        .reaction-pill {
-            font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-        }
-        #messageActionMenu {
-            transition: opacity 0.2s ease, transform 0.2s ease;
-        }
+        .message.me .reactions-container { right: auto; left: 0.75rem; transform-origin: bottom left; }
+        .reactions-container.visible { transform: scale(1); }
+        .reaction-pill { font-size: 0.75rem; display: flex; align-items: center; }
+        #messageActionMenu { transition: opacity 0.2s ease, transform 0.2s ease; }
         .context-action-btn {
-            display: flex;
-            align-items: center;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            width: 100%;
-            text-align: left;
-            color: var(--text-primary);
-            transition: background-color 0.2s ease;
-            font-size: 0.875rem;
-            font-weight: 500;
+            display: flex; align-items: center; padding: 0.5rem 1rem; border-radius: 0.375rem;
+            width: 100%; text-align: left; color: var(--text-primary);
+            transition: background-color 0.2s ease; font-size: 0.875rem; font-weight: 500;
         }
-        .context-action-btn:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
+        .context-action-btn:hover { background-color: rgba(255, 255, 255, 0.1); }
 
-        #emojiPickerContainer {
-            position: absolute;
-            z-index: 102;
-            transform-origin: top left;
-            animation: modalZoom 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        #emojiPickerContainer { position: absolute; z-index: 102; transform-origin: top left; animation: modalZoom 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         emoji-picker {
             --background: var(--glass-primary);
             --border-color: var(--glass-border);
@@ -657,8 +398,6 @@
             --secondary-text-color: var(--text-secondary);
             --border-radius: 1rem;
             --box-shadow: var(--glass-shadow);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
         }
 
         @media (max-width: 768px) {
@@ -747,7 +486,7 @@
 
 <!-- Container for Emoji Picker -->
 <div id="emojiPickerContainer" class="hidden absolute">
-    <emoji-picker class="light"></emoji-picker>
+    <emoji-picker></emoji-picker>
 </div>
 
 <div id="messageActionMenu" class="hidden absolute z-[101]">
@@ -841,26 +580,22 @@
     function displayRecentMessages(count = 20) {
         const recentMessages = chatHistory.slice(-count);
         let currentDate = '';
-        chatBox.innerHTML = ''; // Clear box before rendering
-
+        chatBox.innerHTML = '';
         recentMessages.forEach(msg => {
             const messageDate = new Date(msg.timestamp).toDateString();
             if (messageDate !== currentDate) {
-                addDateSeparator(messageDate, true); // Append date separators
+                addDateSeparator(messageDate, true);
                 currentDate = messageDate;
             }
-            displayMessage(msg, false); // Append messages
+            displayMessage(msg, false);
         });
-        
         chatBox.insertAdjacentElement('afterbegin', loadMoreBtn);
-        
         if (chatHistory.length > count) { 
             loadMoreBtn.style.display = 'block'; 
             historyOffset = count; 
         } else { 
             loadMoreBtn.style.display = 'none'; 
         }
-        
         initialLoadComplete = true;
         setTimeout(() => scrollToBottom(), 100);
     }
@@ -876,37 +611,31 @@
         }
     }
 
-
     function loadOlderMessages() {
         if (isLoadingHistory || historyOffset >= chatHistory.length) return;
         isLoadingHistory = true;
         loadMoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Loading...';
-        
         setTimeout(() => {
             const oldScrollHeight = chatBox.scrollHeight;
             const messagesToLoad = 20;
             const startIndex = Math.max(0, chatHistory.length - historyOffset - messagesToLoad);
             const endIndex = chatHistory.length - historyOffset;
-            
             if (startIndex < endIndex) {
                 const olderMessages = chatHistory.slice(startIndex, endIndex);
                 let lastDate = new Date(olderMessages[olderMessages.length-1].timestamp).toDateString();
-
                 olderMessages.reverse().forEach(msg => {
                     const messageDate = new Date(msg.timestamp).toDateString();
                     if(messageDate !== lastDate) {
                         addDateSeparator(lastDate, false);
                         lastDate = messageDate;
                     }
-                    displayMessage(msg, true); // Prepend older messages
+                    displayMessage(msg, true);
                 });
                 historyOffset += messagesToLoad;
                 chatBox.scrollTop = chatBox.scrollHeight - oldScrollHeight;
             }
-            
             if (historyOffset >= chatHistory.length) 
                 loadMoreBtn.style.display = 'none'; 
-            
             loadMoreBtn.innerHTML = '<i class="fas fa-arrow-up mr-2"></i>Load older messages';
             isLoadingHistory = false;
         }, 800);
@@ -944,11 +673,9 @@
     function displayMessage(messageData, prepend = false) {
         const existingMsgDiv = document.querySelector(`div[data-message-id='${messageData.id}']`);
         if (existingMsgDiv) existingMsgDiv.remove();
-
         const msgDiv = document.createElement('div');
         msgDiv.classList.add('message', messageData.sender);
         msgDiv.dataset.messageId = messageData.id;
-
         if (messageData.replyTo) {
             const originalMessage = chatHistory.find(m => m.id === messageData.replyTo);
             if (originalMessage) {
@@ -956,18 +683,10 @@
                 replyPreview.className = 'reply-preview';
                 const originalSender = originalMessage.sender === 'me' ? 'You' : 'Rumaisa';
                 const originalText = (originalMessage.text || originalMessage.fileName || 'Media').substring(0, 50);
-
-                replyPreview.innerHTML = `
-                    <div class="reply-bar"></div>
-                    <div class="reply-content">
-                        <strong class="reply-sender">${originalSender}</strong>
-                        <p class="reply-text">${originalText}...</p>
-                    </div>
-                `;
+                replyPreview.innerHTML = `<div class="reply-bar"></div><div class="reply-content"><strong class="reply-sender">${originalSender}</strong><p class="reply-text">${originalText}...</p></div>`;
                 msgDiv.appendChild(replyPreview);
             }
         }
-        
         if (messageData.mediaUrl) {
             if (messageData.mediaType === 'image') {
                 const media = document.createElement('img');
@@ -987,15 +706,13 @@
             } else {
                 const fileDiv = document.createElement('div');
                 fileDiv.classList.add('file-message');
-                fileDiv.innerHTML = `<i class="${getFileIcon(messageData.fileName || 'file')} file-icon"></i>
-                    <div><div class="font-semibold text-white">${messageData.fileName || 'File'}</div>
-                         <div class="text-xs text-gray-300">${messageData.fileSize ? formatFileSize(messageData.fileSize) : ''}</div></div>`;
+                fileDiv.innerHTML = `<i class="${getFileIcon(messageData.fileName || 'file')} file-icon"></i><div><div class="font-semibold text-white">${messageData.fileName || 'File'}</div><div class="text-xs text-gray-300">${messageData.fileSize ? formatFileSize(messageData.fileSize) : ''}</div></div>`;
                 msgDiv.appendChild(fileDiv);
             }
             if (messageData.text) {
                 const textDiv = document.createElement('div');
                 textDiv.textContent = messageData.text;
-                textDiv.classList.add('mt-2', 'message-text-content');
+                textDiv.classList.add('message-text-content');
                 msgDiv.appendChild(textDiv);
             }
         } else if (messageData.text) {
@@ -1004,37 +721,27 @@
             textContent.className = 'message-text-content';
             msgDiv.appendChild(textContent);
         }
-        
         const reactionsContainer = document.createElement('div');
         reactionsContainer.className = 'reactions-container';
         if (messageData.reactions && Object.keys(messageData.reactions).length > 0) {
             updateReactionsDisplay(reactionsContainer, messageData.reactions);
         }
         msgDiv.appendChild(reactionsContainer);
-        
         const timeDiv = document.createElement('div');
         timeDiv.classList.add('message-time');
         const displayDate = new Date(messageData.timestamp);
         timeDiv.textContent = displayDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
         msgDiv.appendChild(timeDiv);
-        
         msgDiv.addEventListener('click', (e) => { e.stopPropagation(); openMessageActionMenu(msgDiv); });
-
         if (prepend) {
             loadMoreBtn.insertAdjacentElement('afterend', msgDiv);
         } else {
-             chatBox.appendChild(msgDiv);
+            chatBox.appendChild(msgDiv);
         }
     }
 
     function addMessage(text, sender, mediaUrl = null, mediaType = 'image', fileName = null, fileSize = null, timestamp = Date.now(), replyToId = null, telegramMsgId = null) {
-        const messageData = { 
-            text, sender, mediaUrl, mediaType, fileName, fileSize, timestamp, 
-            id: Date.now() + '' + Math.random(), 
-            reactions: {}, 
-            replyTo: replyToId,
-            telegramMessageId: telegramMsgId 
-        };
+        const messageData = { text, sender, mediaUrl, mediaType, fileName, fileSize, timestamp, id: Date.now() + '' + Math.random(), reactions: {}, replyTo: replyToId, telegramMessageId: telegramMsgId };
         chatHistory.push(messageData);
         saveChatHistory();
         displayMessage(messageData);
@@ -1051,17 +758,14 @@
         const menuHeight = messageActionMenu.offsetHeight;
         let top = rect.top - menuHeight - 10;
         let left = rect.left;
-
         if (messageEl.classList.contains('me')) {
             left = rect.right - messageActionMenu.offsetWidth;
         }
-
         if (top < 10) top = rect.bottom + 10;
         if (left < 10) left = 10;
         if (left + messageActionMenu.offsetWidth > window.innerWidth - 10) {
             left = window.innerWidth - messageActionMenu.offsetWidth - 10;
         }
-
         messageActionMenu.style.top = `${top}px`;
         messageActionMenu.style.left = `${left}px`;
     }
@@ -1078,29 +782,14 @@
         if (!activeMessageElement) return;
         const messageId = activeMessageElement.dataset.messageId;
         const message = chatHistory.find(m => m.id == messageId);
-
         if (message) {
-             if (message.reactions[emoji]) {
-                 delete message.reactions[emoji]; // Toggle off
-            } else {
-                 message.reactions[emoji] = 1; // Toggle on
-            }
+             if (message.reactions[emoji]) { delete message.reactions[emoji]; } else { message.reactions[emoji] = 1; }
             saveChatHistory();
-
             const reactionsContainer = activeMessageElement.querySelector('.reactions-container');
             updateReactionsDisplay(reactionsContainer, message.reactions);
-
             if (message.telegramMessageId) {
                 const reactionPayload = Object.keys(message.reactions).map(em => ({ type: 'emoji', emoji: em }));
-                fetch(`https://api.telegram.org/bot${TOKEN}/setMessageReaction`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: CHAT_ID,
-                        message_id: message.telegramMessageId,
-                        reaction: reactionPayload.length > 0 ? JSON.stringify(reactionPayload) : '',
-                    })
-                });
+                fetch(`https://api.telegram.org/bot${TOKEN}/setMessageReaction`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT_ID, message_id: message.telegramMessageId, reaction: reactionPayload.length > 0 ? JSON.stringify(reactionPayload) : '', }) });
             }
         }
         closeMessageActionMenu();
@@ -1115,14 +804,8 @@
         if (!activeMessageElement) return;
         const textEl = activeMessageElement.querySelector('.message-text-content');
         if (textEl?.textContent) {
-            navigator.clipboard.writeText(textEl.textContent).then(() => {
-                showSentStatus('Message copied!');
-            }, () => {
-                showSentStatus('Failed to copy', 'error');
-            });
-        } else {
-            showSentStatus('No text to copy', 'error');
-        }
+            navigator.clipboard.writeText(textEl.textContent).then(() => { showSentStatus('Message copied!'); }, () => { showSentStatus('Failed to copy', 'error'); });
+        } else { showSentStatus('No text to copy', 'error'); }
         closeMessageActionMenu();
     }
     
@@ -1139,17 +822,10 @@
         closeMessageActionMenu();
     }
 
-    function cancelReply() {
-        activeReplyMessage = null;
-        replyingToBar.classList.remove('show');
-    }
+    function cancelReply() { activeReplyMessage = null; replyingToBar.classList.remove('show'); }
     
     function populateReactions() {
-        const reactionsHTML = defaultReactions.map(emoji => 
-            `<button class="reaction-emoji text-2xl transform hover:scale-125 transition-transform" onclick="event.stopPropagation(); handleReaction('${emoji}')">${emoji}</button>`
-        ).join('');
-        
-        quickReactions.innerHTML = reactionsHTML;
+        quickReactions.innerHTML = defaultReactions.map(emoji => `<button class="reaction-emoji text-2xl transform hover:scale-125 transition-transform" onclick="event.stopPropagation(); handleReaction('${emoji}')">${emoji}</button>`).join('');
     }
     
     function deleteMessage() {
@@ -1158,23 +834,13 @@
         const messageId = elementToDelete.dataset.messageId;
         const messageIndex = chatHistory.findIndex(m => m.id == messageId);
         closeMessageActionMenu();
-
         if (messageIndex > -1) {
             const messageToDelete = chatHistory[messageIndex];
             const truncatedContent = (messageToDelete.text || "Attachment").substring(0, 50);
-
-            // Send a notification message to Telegram
             const notificationText = `"${truncatedContent}..." MESSAGE HAS BEEN DELETED`;
-            fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ chat_id: CHAT_ID, text: notificationText })
-            });
-            
-            // Remove from UI and local history
+            fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT_ID, text: notificationText }) });
             chatHistory.splice(messageIndex, 1);
             saveChatHistory();
-
             elementToDelete.style.transition = 'opacity 0.4s, transform 0.4s';
             elementToDelete.style.opacity = '0';
             elementToDelete.style.transform = 'translateX(20px) scale(0.9)';
@@ -1183,26 +849,11 @@
         }
     }
 
-    function openImageModal(imageUrl) { 
-        fullImage.src = imageUrl; 
-        modalContainer.style.display = 'flex'; 
-    }
-    
-    function closeModal() { 
-        modalContainer.style.display = 'none'; 
-    }
-    
-    function scrollToBottom() { 
-        chatBox.scrollTop = chatBox.scrollHeight; 
-    }
-    
-    function openFileDialog() { 
-        fileInput.click(); 
-    }
-
-    function addQuickEmoji() {
-        sendMessage('🙂');
-    }
+    function openImageModal(imageUrl) { fullImage.src = imageUrl; modalContainer.style.display = 'flex'; }
+    function closeModal() { modalContainer.style.display = 'none'; }
+    function scrollToBottom() { chatBox.scrollTop = chatBox.scrollHeight; }
+    function openFileDialog() { fileInput.click(); }
+    function addQuickEmoji() { sendMessage('🙂'); }
     
     async function sendMessage(textOverride = null) {
         const message = textOverride || messageInput.value.trim();
@@ -1217,38 +868,24 @@
         }
         
         const replyToId = activeReplyMessage ? activeReplyMessage.id : null;
-        
         let fetchBody = { chat_id: CHAT_ID, text: message };
         if(activeReplyMessage && activeReplyMessage.telegramMessageId) {
             fetchBody.reply_parameters = { message_id: activeReplyMessage.telegramMessageId };
         }
-        
         const sentMessageData = addMessage(message, 'me', null, null, null, null, Date.now(), replyToId);
-
-        if(!textOverride) {
-            messageInput.value = '';
-            autoResizeTextarea();
-        }
+        if(!textOverride) { messageInput.value = ''; autoResizeTextarea(); }
         cancelReply();
-
         try {
-            const res = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify(fetchBody)
-            });
+            const res = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fetchBody) });
             const data = await res.json();
             if (!data.ok) throw new Error(data.description);
             sentMessageData.telegramMessageId = data.result.message_id;
             saveChatHistory();
         } catch(err) {
-            isConnectionActive = false;
-            clearTimeout(replyTimer);
-            setSignalLight('red');
+            isConnectionActive = false; clearTimeout(replyTimer); setSignalLight('red');
             showSentStatus('Failed to send message', 'error');
         }
     }
-
 
     function autoResizeTextarea() {
         messageInput.style.height = 'auto';
@@ -1258,33 +895,24 @@
     async function sendFile() {
         const file = fileInput.files[0];
         if (!file) { showSentStatus('No file selected!', 'error'); return; }
-
         if (!isConnectionActive) {
             clearTimeout(replyTimer);
             setSignalLight('yellow');
             replyTimer = setTimeout(() => { setSignalLight('red'); }, 30000);
         }
-
         const caption = messageInput.value.trim();
         const mediaType = file.type.startsWith('image/') ? 'image' : (file.type.startsWith('video/') ? 'video' : 'document');
-        
         const replyToId = activeReplyMessage ? activeReplyMessage.id : null;
-        
         const sentMessageData = addMessage(caption, 'me', URL.createObjectURL(file), mediaType, file.name, file.size, Date.now(), replyToId);
-        cancelReply();
-        messageInput.value = '';
-        autoResizeTextarea();
-
+        cancelReply(); messageInput.value = ''; autoResizeTextarea();
         const formData = new FormData();
         formData.append("chat_id", CHAT_ID);
         if (activeReplyMessage && activeReplyMessage.telegramMessageId) {
             formData.append('reply_parameters', JSON.stringify({ message_id: activeReplyMessage.telegramMessageId }));
         }
-        
         let endpoint = mediaType === 'image' ? 'sendPhoto' : (mediaType === 'video' ? 'sendVideo' : 'sendDocument');
         formData.append(endpoint.replace('send','').toLowerCase(), file);
         if (caption) formData.append('caption', caption);
-
         try {
             const res = await fetch(`https://api.telegram.org/bot${TOKEN}/${endpoint}`, { method: "POST", body: formData });
             const data = await res.json();
@@ -1292,9 +920,7 @@
             sentMessageData.telegramMessageId = data.result.message_id;
             saveChatHistory();
         } catch(err) {
-            isConnectionActive = false;
-            clearTimeout(replyTimer);
-            setSignalLight('red');
+            isConnectionActive = false; clearTimeout(replyTimer); setSignalLight('red');
             showSentStatus('Upload failed', 'error');
         }
         clearFileSelection();
@@ -1303,11 +929,8 @@
     function updateSendButton() {
         sendBtn.disabled = !(messageInput.value.trim().length > 0 || fileInput.files.length > 0);
     }
-
     function clearFileSelection() {
-        fileInput.value = '';
-        fileInfoBar.classList.remove('show');
-        updateSendButton();
+        fileInput.value = ''; fileInfoBar.classList.remove('show'); updateSendButton();
     }
 
     let pollRetryDelay = 1000;
@@ -1324,13 +947,8 @@
                         lastUpdateId = update.update_id;
                         const msg = update.message;
                         const reaction = update.message_reaction;
-                        
                         const isRelevantUpdate = (msg && msg.from.id === RUMAISA_ID) || (reaction && reaction.user.id === RUMAISA_ID);
-
-                        if(isRelevantUpdate){
-                           hadUpdateFromRumaisa = true;
-                        }
-
+                        if(isRelevantUpdate) hadUpdateFromRumaisa = true;
                         if(msg && msg.from.id === RUMAISA_ID) {
                             if (msg.text && msg.text.includes("MESSAGE HAS BEEN DELETED")) return;
                             const text = msg.text || msg.caption || '';
@@ -1342,9 +960,7 @@
                                 if (originalMessage) replyToId = originalMessage.id;
                             }
                             if (fileData) {
-                                 fetch(`https://api.telegram.org/bot${TOKEN}/getFile?file_id=${fileData.file_id}`)
-                                 .then(res=>res.json())
-                                 .then(fileInfo => {
+                                 fetch(`https://api.telegram.org/bot${TOKEN}/getFile?file_id=${fileData.file_id}`).then(res=>res.json()).then(fileInfo => {
                                     if (!fileInfo.ok) return;
                                     const url = `https://api.telegram.org/file/bot${TOKEN}/${fileInfo.result.file_path}`;
                                     const type = msg.photo ? 'image' : (msg.video ? 'video' : 'document');
@@ -1354,17 +970,13 @@
                                 addMessage(text, 'rumaisa', null, null, null, null, time, replyToId, msg.message_id);
                             }
                         }
-                        
                         if(reaction && reaction.user.id === RUMAISA_ID) {
                             const message = chatHistory.find(m => m.telegramMessageId === reaction.message_id);
                             if (message) {
                                 const newReactions = {};
-                                reaction.new_reaction.forEach(r => {
-                                    if(r.type === 'emoji') newReactions[r.emoji] = 1;
-                                });
+                                reaction.new_reaction.forEach(r => { if(r.type === 'emoji') newReactions[r.emoji] = 1; });
                                 message.reactions = newReactions;
                                 saveChatHistory();
-                                
                                 const messageEl = document.querySelector(`div[data-message-id='${message.id}']`);
                                 if(messageEl) {
                                     const reactionsContainer = messageEl.querySelector('.reactions-container');
@@ -1373,31 +985,21 @@
                             }
                         }
                     });
-
                     if (hadUpdateFromRumaisa) {
-                         isConnectionActive = true;
-                         clearTimeout(replyTimer);
-                         setSignalLight('green');
+                         isConnectionActive = true; clearTimeout(replyTimer); setSignalLight('green');
                     }
                 }
-                // Long polling: instant if Rumaisa sends message/reaction, else 30 sec wait
-const hasNewData = (data && data.length > 0) || 
-                   (reactions && reactions.some(r => r.user.id === RUMAISA_ID));
-
-const nextPollDelay = hasNewData ? 0 : 30000; // 0 = instant, 30000 = 30 sec
-setTimeout(pollMessages, nextPollDelay);
+                setTimeout(pollMessages, 1000);
             })
             .catch(err => {
                 isConnectionActive = false;
-                clearTimeout(replyTimer);
-                setSignalLight('red');
+                if (!replyTimer) setSignalLight('red'); 
                 console.error('Polling error:', err);
                 setTimeout(pollMessages, pollRetryDelay);
                 pollRetryDelay = Math.min(pollRetryDelay * 2, MAX_POLL_RETRY_DELAY);
             });
     }
 
-    // Event Listeners Setup
     loadMoreBtn.addEventListener('click', loadOlderMessages);
     messageInput.addEventListener('input', () => { autoResizeTextarea(); updateSendButton(); });
     messageInput.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
@@ -1419,29 +1021,10 @@ setTimeout(pollMessages, nextPollDelay);
     copyBtn.addEventListener('click', (e) => { e.stopPropagation(); copyMessageText(); });
     deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); deleteMessage(); });
     replyCloseBtn.addEventListener('click', cancelReply);
-
     document.querySelector('emoji-picker').addEventListener('emoji-click', event => {
         handleReaction(event.detail.unicode);
     });
 
-    quickReactions.addEventListener('click', (e) => {
-        if(e.target.closest('#expandReactionsBtn')) {
-            e.stopPropagation();
-            const rect = messageActionMenu.getBoundingClientRect();
-            let top = rect.top - 350; 
-            if(top < 10) top = rect.bottom + 10;
-            let left = rect.left;
-            if(left + 350 > window.innerWidth -10) left = window.innerWidth - 350 -10;
-
-
-            emojiPickerContainer.style.top = `${top}px`;
-            emojiPickerContainer.style.left = `${left}px`;
-            emojiPickerContainer.classList.toggle('hidden');
-        }
-    });
-
-
-    // Initial App Load
     populateReactions();
     loadChatHistory();
     pollMessages();
