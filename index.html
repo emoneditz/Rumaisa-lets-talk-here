@@ -21,7 +21,7 @@
             --text-primary: rgba(255, 255, 255, 0.9);
             --text-secondary: rgba(255, 255, 255, 0.7);
             /* Reduced blur radius from 40px to 15px and removed saturate() */
-            --backdrop-blur: blur(5px);
+            --backdrop-blur: blur(1px);
         }
 
         * {
@@ -1380,7 +1380,12 @@
                          setSignalLight('green');
                     }
                 }
-                setTimeout(pollMessages, 1000);
+                // Long polling: instant if Rumaisa sends message/reaction, else 30 sec wait
+const hasNewData = (data && data.length > 0) || 
+                   (reactions && reactions.some(r => r.user.id === RUMAISA_ID));
+
+const nextPollDelay = hasNewData ? 0 : 30000; // 0 = instant, 30000 = 30 sec
+setTimeout(pollMessages, nextPollDelay);
             })
             .catch(err => {
                 isConnectionActive = false;
