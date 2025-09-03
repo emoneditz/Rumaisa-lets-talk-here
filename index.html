@@ -9,9 +9,9 @@
     <!-- Emoji Picker Library -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
     <style>
-        /* --- VISUALS RESTORED: Bringing back the Liquid Glass blur effect --- */
+        /* --- FULL OPTIMIZATION APPLIED: Replaced ALL GPU-heavy blur with fake glass effect --- */
         :root {
-            --glass-primary: rgba(255, 255, 255, 0.1);
+            --glass-primary: rgba(255, 255, 255, 0.08);
             --glass-secondary: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.2);
             --glass-shadow: 0 6px 16px 0 rgba(31, 38, 135, 0.35); 
@@ -19,7 +19,6 @@
             --bubble-rumaisa: rgba(255, 255, 255, 0.15);
             --text-primary: rgba(255, 255, 255, 0.9);
             --text-secondary: rgba(255, 255, 255, 0.7);
-            --backdrop-blur: blur(5px);
         }
 
         * {
@@ -51,8 +50,6 @@
             flex-direction: column;
             overflow: hidden;
             background: var(--glass-primary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
             border: 1px solid var(--glass-border);
             position: relative;
             z-index: 1;
@@ -61,7 +58,6 @@
         /* Liquid Glass Header */
         .chat-header {
             background: var(--glass-primary);
-            backdrop-filter: var(--backdrop-blur);
             border-bottom: 1px solid var(--glass-border);
             color: var(--text-primary);
             padding: 1.25rem 1rem;
@@ -140,8 +136,6 @@
             position: relative;
             animation: liquidAppear 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             white-space: pre-wrap;
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
             border: 1px solid rgba(255, 255, 255, 0.15);
             transition: all 0.3s ease;
             user-select: none;
@@ -213,8 +207,6 @@
             align-items: center;
             padding: 0.75rem;
             background: var(--glass-primary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
             border-top: 1px solid var(--glass-border);
             flex-shrink: 0;
             z-index: 50;
@@ -238,8 +230,6 @@
         .message-input-wrapper { 
             flex: 1; display: flex; align-items: center; 
             background: var(--glass-secondary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
             border-radius: 2rem; 
             border: 1px solid var(--glass-border);
             min-height: 3rem; 
@@ -263,8 +253,6 @@
             justify-content: center; align-items: center; color: white; 
             font-size: 1.25rem; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             box-shadow: var(--glass-shadow); border: 1px solid var(--glass-border);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
             position: relative; overflow: hidden;
         }
         .emoji-button { font-size: 1.5rem; }
@@ -285,8 +273,6 @@
         .file-info-bar {
             display: none; width: 100%; padding: 0.75rem 1rem;
             background: var(--glass-secondary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
             border-radius: 1.25rem; align-items: center; justify-content: space-between;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             box-shadow: var(--glass-shadow); border: 1px solid var(--glass-border);
@@ -302,8 +288,6 @@
             position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
             padding: 1rem 2rem;
             background: var(--glass-primary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
             border: 1px solid var(--glass-border); border-radius: 2rem;
             box-shadow: var(--glass-shadow); color: var(--text-primary); font-weight: 600;
             z-index: 100; display: flex; align-items: center; gap: 0.75rem;
@@ -320,8 +304,6 @@
 
         .load-more {
             background: var(--glass-primary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
             border: 1px solid var(--glass-border); color: var(--text-primary);
             padding: 0.75rem 1.5rem; border-radius: 1.5rem; margin: 1rem auto;
             cursor: pointer; transition: all 0.3s ease; box-shadow: var(--glass-shadow); text-align: center;
@@ -332,15 +314,10 @@
         .modal-container { 
             display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; 
             overflow: auto; background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             justify-content: center; align-items: center; animation: modalFadeIn 0.3s ease-out; 
         }
 
-        @keyframes modalFadeIn { 
-            from { opacity: 0; backdrop-filter: blur(0); } 
-            to { opacity: 1; backdrop-filter: blur(10px); } 
-        }
+        @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .modal-content { 
             max-width: 90vw; max-height: 90vh; border-radius: 1rem;
@@ -357,8 +334,6 @@
             position: absolute; top: 1rem; right: 2rem; color: white; font-size: 2rem; 
             font-weight: bold; cursor: pointer;
             background: var(--glass-primary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
             border: 1px solid var(--glass-border); border-radius: 50%;
             width: 3rem; height: 3rem; display: flex; align-items: center; justify-content: center;
             box-shadow: var(--glass-shadow); transition: all 0.3s ease;
@@ -368,8 +343,6 @@
 
         .date-separator span {
             background: var(--glass-primary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
             border: 1px solid var(--glass-border);
             color: var(--text-secondary);
             padding: 0.5rem 1rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;
@@ -384,8 +357,6 @@
         .file-message { 
             display: flex; align-items: center; padding: 1rem; 
             background: var(--glass-secondary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
             border-radius: 1rem; margin: 0.5rem 0; cursor: pointer; transition: all 0.3s ease;
             border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
         }
@@ -402,8 +373,6 @@
         .reactions-container {
             position: absolute; bottom: -0.75rem; right: 0.75rem; display: flex; gap: 0.25rem;
             background: var(--glass-secondary);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
             padding: 0.25rem 0.5rem; border-radius: 1rem; border: 1px solid var(--glass-border);
             box-shadow: var(--glass-shadow); transform: scale(0);
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -429,7 +398,6 @@
             --secondary-text-color: var(--text-secondary);
             --border-radius: 1rem;
             --box-shadow: var(--glass-shadow);
-            backdrop-filter: var(--backdrop-blur);
         }
 
         @media (max-width: 768px) {
@@ -516,16 +484,31 @@
     <img class="modal-content" id="fullImage" src="" alt="Full size image">
 </div>
 
+<!-- Container for Emoji Picker -->
+<div id="emojiPickerContainer" class="hidden absolute">
+    <emoji-picker></emoji-picker>
+</div>
+
 <div id="messageActionMenu" class="hidden absolute z-[101]">
-    <div id="quickReactions" class="flex items-center gap-1 bg-glass-primary rounded-full shadow-lg border border-glass-border p-2 mb-2">
+    <div id="quickReactions" class="flex items-center gap-1 bg-glass-primary backdrop-blur rounded-full shadow-lg border border-glass-border p-2 mb-2">
         <!-- Reactions will be populated by JS -->
     </div>
-    <div class="flex flex-col gap-1 bg-glass-primary rounded-lg shadow-lg border border-glass-border p-1">
-        <button id="replyBtn" class="context-action-btn"> <i class="fas fa-reply w-5 mr-2 text-gray-300"></i> <span>Reply</span> </button>
-        <button id="copyBtn" class="context-action-btn"> <i class="fas fa-copy w-5 mr-2 text-gray-300"></i> <span>Copy</span> </button>
-        <button id="deleteBtn" class="context-action-btn"> <i class="fas fa-trash w-5 mr-2 text-gray-300"></i> <span>Delete</span> </button>
+    <div class="flex flex-col gap-1 bg-glass-primary backdrop-blur rounded-lg shadow-lg border border-glass-border p-1">
+        <button id="replyBtn" class="context-action-btn">
+            <i class="fas fa-reply w-5 mr-2 text-gray-300"></i>
+            <span>Reply</span>
+        </button>
+        <button id="copyBtn" class="context-action-btn">
+            <i class="fas fa-copy w-5 mr-2 text-gray-300"></i>
+            <span>Copy</span>
+        </button>
+        <button id="deleteBtn" class="context-action-btn">
+            <i class="fas fa-trash w-5 mr-2 text-gray-300"></i>
+            <span>Delete</span>
+        </button>
     </div>
 </div>
+
 
 <script>
     const TOKEN = "8373355359:AAF0b7kWG2mNFv0qBYt2YTjvW5mD6eSBCuw";
@@ -556,6 +539,7 @@
     const replyingToUser = document.getElementById('replyingToUser');
     const replyingToText = document.getElementById('replyingToText');
     const replyCloseBtn = document.getElementById('replyCloseBtn');
+    const emojiPickerContainer = document.getElementById('emojiPickerContainer');
 
     let chatHistory = [];
     let historyOffset = 0;
@@ -568,11 +552,11 @@
     const defaultReactions = ['🤣', '❤️', '👍', '👎', '🔥', '🥰'];
     
     let replyTimer = null; 
-    let isConnectionActive = false;
+    let isConnectionActive = false; // Tracks if the connection has been confirmed
     
     function setSignalLight(color) {
         const light = document.getElementById('signal-light');
-        light.className = '';
+        light.className = ''; // Clear existing color classes
         if (color) {
             light.classList.add(color);
         }
@@ -580,12 +564,16 @@
 
     function loadChatHistory() {
         const storedHistory = localStorage.getItem('chatHistory');
-        if (storedHistory) chatHistory = JSON.parse(storedHistory);
+        if (storedHistory) {
+            chatHistory = JSON.parse(storedHistory);
+        }
         displayRecentMessages(20);
     }
 
     function saveChatHistory() {
-        if (chatHistory.length > 50) chatHistory = chatHistory.slice(chatHistory.length - 50);
+        if (chatHistory.length > 50) {
+            chatHistory = chatHistory.slice(chatHistory.length - 50);
+        }
         localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
     }
 
@@ -602,8 +590,12 @@
             displayMessage(msg, false);
         });
         chatBox.insertAdjacentElement('afterbegin', loadMoreBtn);
-        loadMoreBtn.style.display = (chatHistory.length > count) ? 'block' : 'none';
-        if (chatHistory.length > count) historyOffset = count;
+        if (chatHistory.length > count) { 
+            loadMoreBtn.style.display = 'block'; 
+            historyOffset = count; 
+        } else { 
+            loadMoreBtn.style.display = 'none'; 
+        }
         initialLoadComplete = true;
         setTimeout(() => scrollToBottom(), 100);
     }
@@ -612,8 +604,11 @@
         const separator = document.createElement('div');
         separator.classList.add('date-separator', 'text-center', 'my-4', 'relative');
         separator.innerHTML = `<span>${dateStr}</span>`;
-        if (append) { chatBox.appendChild(separator); }
-        else { chatBox.insertBefore(separator, loadMoreBtn.nextSibling); }
+        if (append) {
+            chatBox.appendChild(separator);
+        } else {
+            chatBox.insertBefore(separator, loadMoreBtn.nextSibling);
+        }
     }
 
     function loadOlderMessages() {
@@ -630,13 +625,17 @@
                 let lastDate = new Date(olderMessages[olderMessages.length-1].timestamp).toDateString();
                 olderMessages.reverse().forEach(msg => {
                     const messageDate = new Date(msg.timestamp).toDateString();
-                    if(messageDate !== lastDate) { addDateSeparator(lastDate, false); lastDate = messageDate; }
+                    if(messageDate !== lastDate) {
+                        addDateSeparator(lastDate, false);
+                        lastDate = messageDate;
+                    }
                     displayMessage(msg, true);
                 });
                 historyOffset += messagesToLoad;
                 chatBox.scrollTop = chatBox.scrollHeight - oldScrollHeight;
             }
-            if (historyOffset >= chatHistory.length) loadMoreBtn.style.display = 'none'; 
+            if (historyOffset >= chatHistory.length) 
+                loadMoreBtn.style.display = 'none'; 
             loadMoreBtn.innerHTML = '<i class="fas fa-arrow-up mr-2"></i>Load older messages';
             isLoadingHistory = false;
         }, 800);
@@ -646,7 +645,9 @@
         sentMessage.textContent = message;
         sentIcon.className = type === 'success' ? 'fas fa-check-circle text-green-500' : 'fas fa-exclamation-circle text-red-500';
         sentNotification.classList.add('show');
-        setTimeout(() => { sentNotification.classList.remove('show'); }, 3000);
+        setTimeout(() => {
+            sentNotification.classList.remove('show');
+        }, 3000);
     }
 
     function formatFileSize(bytes) {
@@ -689,12 +690,18 @@
         if (messageData.mediaUrl) {
             if (messageData.mediaType === 'image') {
                 const media = document.createElement('img');
-                media.src = messageData.mediaUrl; media.classList.add('media'); media.loading = 'lazy'; media.alt = messageData.text || 'Image';
+                media.src = messageData.mediaUrl;
+                media.classList.add('media');
+                media.loading = 'lazy';
+                media.alt = messageData.text || 'Image';
                 media.onclick = (e) => { e.stopPropagation(); openImageModal(messageData.mediaUrl); };
                 msgDiv.appendChild(media);
             } else if (messageData.mediaType === 'video') {
                 const video = document.createElement('video');
-                video.src = messageData.mediaUrl; video.classList.add('media-video'); video.controls = true; video.playsinline = true;
+                video.src = messageData.mediaUrl;
+                video.classList.add('media-video');
+                video.controls = true;
+                video.playsinline = true;
                 msgDiv.appendChild(video);
             } else {
                 const fileDiv = document.createElement('div');
@@ -704,17 +711,21 @@
             }
             if (messageData.text) {
                 const textDiv = document.createElement('div');
-                textDiv.textContent = messageData.text; textDiv.classList.add('message-text-content');
+                textDiv.textContent = messageData.text;
+                textDiv.classList.add('message-text-content');
                 msgDiv.appendChild(textDiv);
             }
         } else if (messageData.text) {
             const textContent = document.createElement('p');
-            textContent.textContent = messageData.text; textContent.className = 'message-text-content';
+            textContent.textContent = messageData.text;
+            textContent.className = 'message-text-content';
             msgDiv.appendChild(textContent);
         }
         const reactionsContainer = document.createElement('div');
         reactionsContainer.className = 'reactions-container';
-        if (messageData.reactions && Object.keys(messageData.reactions).length > 0) updateReactionsDisplay(reactionsContainer, messageData.reactions);
+        if (messageData.reactions && Object.keys(messageData.reactions).length > 0) {
+            updateReactionsDisplay(reactionsContainer, messageData.reactions);
+        }
         msgDiv.appendChild(reactionsContainer);
         const timeDiv = document.createElement('div');
         timeDiv.classList.add('message-time');
@@ -722,8 +733,11 @@
         timeDiv.textContent = displayDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
         msgDiv.appendChild(timeDiv);
         msgDiv.addEventListener('click', (e) => { e.stopPropagation(); openMessageActionMenu(msgDiv); });
-        if (prepend) { loadMoreBtn.insertAdjacentElement('afterend', msgDiv); } 
-        else { chatBox.appendChild(msgDiv); }
+        if (prepend) {
+            loadMoreBtn.insertAdjacentElement('afterend', msgDiv);
+        } else {
+            chatBox.appendChild(msgDiv);
+        }
     }
 
     function addMessage(text, sender, mediaUrl = null, mediaType = 'image', fileName = null, fileSize = null, timestamp = Date.now(), replyToId = null, telegramMsgId = null) {
@@ -731,7 +745,9 @@
         chatHistory.push(messageData);
         saveChatHistory();
         displayMessage(messageData);
-        if (initialLoadComplete) setTimeout(() => scrollToBottom(), 100);
+        if (initialLoadComplete) {
+            setTimeout(() => scrollToBottom(), 100);
+        }
         return messageData;
     }
 
@@ -742,16 +758,24 @@
         const menuHeight = messageActionMenu.offsetHeight;
         let top = rect.top - menuHeight - 10;
         let left = rect.left;
-        if (messageEl.classList.contains('me')) left = rect.right - messageActionMenu.offsetWidth;
+        if (messageEl.classList.contains('me')) {
+            left = rect.right - messageActionMenu.offsetWidth;
+        }
         if (top < 10) top = rect.bottom + 10;
         if (left < 10) left = 10;
-        if (left + messageActionMenu.offsetWidth > window.innerWidth - 10) left = window.innerWidth - messageActionMenu.offsetWidth - 10;
+        if (left + messageActionMenu.offsetWidth > window.innerWidth - 10) {
+            left = window.innerWidth - messageActionMenu.offsetWidth - 10;
+        }
         messageActionMenu.style.top = `${top}px`;
         messageActionMenu.style.left = `${left}px`;
     }
 
     function closeMessageActionMenu() {
-        if (!messageActionMenu.classList.contains('hidden')) { messageActionMenu.classList.add('hidden'); activeMessageElement = null; }
+        if (!messageActionMenu.classList.contains('hidden')) {
+            messageActionMenu.classList.add('hidden');
+            activeMessageElement = null;
+        }
+        emojiPickerContainer.classList.add('hidden');
     }
 
     function handleReaction(emoji) {
@@ -779,8 +803,9 @@
     function copyMessageText() {
         if (!activeMessageElement) return;
         const textEl = activeMessageElement.querySelector('.message-text-content');
-        if (textEl?.textContent) navigator.clipboard.writeText(textEl.textContent).then(() => { showSentStatus('Message copied!'); }, () => { showSentStatus('Failed to copy', 'error'); });
-        else showSentStatus('No text to copy', 'error');
+        if (textEl?.textContent) {
+            navigator.clipboard.writeText(textEl.textContent).then(() => { showSentStatus('Message copied!'); }, () => { showSentStatus('Failed to copy', 'error'); });
+        } else { showSentStatus('No text to copy', 'error'); }
         closeMessageActionMenu();
     }
     
@@ -844,12 +869,12 @@
         
         const replyToId = activeReplyMessage ? activeReplyMessage.id : null;
         let fetchBody = { chat_id: CHAT_ID, text: message };
-        if(activeReplyMessage && activeReplyMessage.telegramMessageId) fetchBody.reply_parameters = { message_id: activeReplyMessage.telegramMessageId };
-        
+        if(activeReplyMessage && activeReplyMessage.telegramMessageId) {
+            fetchBody.reply_parameters = { message_id: activeReplyMessage.telegramMessageId };
+        }
         const sentMessageData = addMessage(message, 'me', null, null, null, null, Date.now(), replyToId);
         if(!textOverride) { messageInput.value = ''; autoResizeTextarea(); }
         cancelReply();
-
         try {
             const res = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fetchBody) });
             const data = await res.json();
@@ -882,12 +907,12 @@
         cancelReply(); messageInput.value = ''; autoResizeTextarea();
         const formData = new FormData();
         formData.append("chat_id", CHAT_ID);
-        if (activeReplyMessage && activeReplyMessage.telegramMessageId) formData.append('reply_parameters', JSON.stringify({ message_id: activeReplyMessage.telegramMessageId }));
-        
+        if (activeReplyMessage && activeReplyMessage.telegramMessageId) {
+            formData.append('reply_parameters', JSON.stringify({ message_id: activeReplyMessage.telegramMessageId }));
+        }
         let endpoint = mediaType === 'image' ? 'sendPhoto' : (mediaType === 'video' ? 'sendVideo' : 'sendDocument');
         formData.append(endpoint.replace('send','').toLowerCase(), file);
         if (caption) formData.append('caption', caption);
-
         try {
             const res = await fetch(`https://api.telegram.org/bot${TOKEN}/${endpoint}`, { method: "POST", body: formData });
             const data = await res.json();
@@ -911,75 +936,70 @@
     let pollRetryDelay = 1000;
     const MAX_POLL_RETRY_DELAY = 30000;
 
-    async function pollMessages() {
-        try {
-            const res = await fetch(`https://api.telegram.org/bot${TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=25&allowed_updates=["message","message_reaction"]`);
-            if (!res.ok) throw new Error(res.statusText);
-
-            const data = await res.json();
-            pollRetryDelay = 1000;
-
-            if (data.ok && data.result.length > 0) {
-                let hadUpdateFromRumaisa = false;
-                data.result.forEach(update => {
-                    lastUpdateId = update.update_id;
-                    const msg = update.message;
-                    const reaction = update.message_reaction;
-                    const isRelevantUpdate = (msg && msg.from.id === RUMAISA_ID) || (reaction && reaction.user.id === RUMAISA_ID);
-
-                    if(isRelevantUpdate) hadUpdateFromRumaisa = true;
-                    
-                    if(msg && msg.from.id === RUMAISA_ID) {
-                        if (msg.text && msg.text.includes("MESSAGE HAS BEEN DELETED")) return;
-                        const text = msg.text || msg.caption || '';
-                        const time = msg.date * 1000;
-                        const fileData = msg.photo?.pop() || msg.video || msg.document;
-                        let replyToId = null;
-                        if (msg.reply_to_message) {
-                            const originalMessage = chatHistory.find(m => m.telegramMessageId === msg.reply_to_message.message_id);
-                            if (originalMessage) replyToId = originalMessage.id;
+    function pollMessages() {
+        fetch(`https://api.telegram.org/bot${TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=25&allowed_updates=["message","message_reaction"]`)
+            .then(res => res.ok ? res.json() : Promise.reject(new Error(res.statusText)))
+            .then(data => {
+                pollRetryDelay = 1000; 
+                if (data.ok && data.result.length > 0) {
+                    let hadUpdateFromRumaisa = false;
+                    data.result.forEach(update => {
+                        lastUpdateId = update.update_id;
+                        const msg = update.message;
+                        const reaction = update.message_reaction;
+                        const isRelevantUpdate = (msg && msg.from.id === RUMAISA_ID) || (reaction && reaction.user.id === RUMAISA_ID);
+                        if(isRelevantUpdate) hadUpdateFromRumaisa = true;
+                        if(msg && msg.from.id === RUMAISA_ID) {
+                            if (msg.text && msg.text.includes("MESSAGE HAS BEEN DELETED")) return;
+                            const text = msg.text || msg.caption || '';
+                            const time = msg.date * 1000;
+                            const fileData = msg.photo?.pop() || msg.video || msg.document;
+                            let replyToId = null;
+                            if (msg.reply_to_message) {
+                                const originalMessage = chatHistory.find(m => m.telegramMessageId === msg.reply_to_message.message_id);
+                                if (originalMessage) replyToId = originalMessage.id;
+                            }
+                            if (fileData) {
+                                 fetch(`https://api.telegram.org/bot${TOKEN}/getFile?file_id=${fileData.file_id}`).then(res=>res.json()).then(fileInfo => {
+                                    if (!fileInfo.ok) return;
+                                    const url = `https://api.telegram.org/file/bot${TOKEN}/${fileInfo.result.file_path}`;
+                                    const type = msg.photo ? 'image' : (msg.video ? 'video' : 'document');
+                                    addMessage(text, 'rumaisa', url, type, fileData.file_name, fileData.file_size, time, replyToId, msg.message_id);
+                                 });
+                            } else if (text) {
+                                addMessage(text, 'rumaisa', null, null, null, null, time, replyToId, msg.message_id);
+                            }
                         }
-                        if (fileData) {
-                                fetch(`https://api.telegram.org/bot${TOKEN}/getFile?file_id=${fileData.file_id}`).then(res=>res.json()).then(fileInfo => {
-                                if (!fileInfo.ok) return;
-                                const url = `https://api.telegram.org/file/bot${TOKEN}/${fileInfo.result.file_path}`;
-                                const type = msg.photo ? 'image' : (msg.video ? 'video' : 'document');
-                                addMessage(text, 'rumaisa', url, type, fileData.file_name, fileData.file_size, time, replyToId, msg.message_id);
-                                });
-                        } else if (text) {
-                            addMessage(text, 'rumaisa', null, null, null, null, time, replyToId, msg.message_id);
+                        if(reaction && reaction.user.id === RUMAISA_ID) {
+                            const message = chatHistory.find(m => m.telegramMessageId === reaction.message_id);
+                            if (message) {
+                                const newReactions = {};
+                                reaction.new_reaction.forEach(r => { if(r.type === 'emoji') newReactions[r.emoji] = 1; });
+                                message.reactions = newReactions;
+                                saveChatHistory();
+                                const messageEl = document.querySelector(`div[data-message-id='${message.id}']`);
+                                if(messageEl) {
+                                    const reactionsContainer = messageEl.querySelector('.reactions-container');
+                                    updateReactionsDisplay(reactionsContainer, message.reactions);
+                                }
+                            }
                         }
+                    });
+                    if (hadUpdateFromRumaisa) {
+                         isConnectionActive = true; clearTimeout(replyTimer); setSignalLight('green');
                     }
-                    if(reaction && reaction.user.id === RUMAISA_ID) {
-                        const message = chatHistory.find(m => m.telegramMessageId === reaction.message_id);
-                        if (message) {
-                            const newReactions = {};
-                            reaction.new_reaction.forEach(r => { if(r.type === 'emoji') newReactions[r.emoji] = 1; });
-                            message.reactions = newReactions;
-                            saveChatHistory();
-                            const messageEl = document.querySelector(`div[data-message-id='${message.id}']`);
-                            if(messageEl) updateReactionsDisplay(messageEl.querySelector('.reactions-container'), message.reactions);
-                        }
-                    }
-                });
-
-                if (hadUpdateFromRumaisa) {
-                        isConnectionActive = true; clearTimeout(replyTimer); setSignalLight('green');
                 }
-            }
-        } catch (err) {
-            isConnectionActive = false;
-            if (!replyTimer) setSignalLight('red'); 
-            console.error('Polling error:', err);
-            setTimeout(pollMessages, pollRetryDelay); // Wait before retrying on error
-            pollRetryDelay = Math.min(pollRetryDelay * 2, MAX_POLL_RETRY_DELAY);
-            return; // Exit here to prevent immediate re-poll after an error with a delay
-        }
-
-        pollMessages(); // Immediately poll again on success
+                pollMessages();  // immediate re-poll, no 1s delay
+            })
+            .catch(err => {
+                isConnectionActive = false;
+                if (!replyTimer) setSignalLight('red'); 
+                console.error('Polling error:', err);
+                setTimeout(pollMessages, pollRetryDelay);
+                pollRetryDelay = Math.min(pollRetryDelay * 2, MAX_POLL_RETRY_DELAY);
+            });
     }
 
-    // Event Listeners
     loadMoreBtn.addEventListener('click', loadOlderMessages);
     messageInput.addEventListener('input', () => { autoResizeTextarea(); updateSendButton(); });
     messageInput.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
@@ -1001,11 +1021,13 @@
     copyBtn.addEventListener('click', (e) => { e.stopPropagation(); copyMessageText(); });
     deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); deleteMessage(); });
     replyCloseBtn.addEventListener('click', cancelReply);
-    
-    // Initial App Load
+    document.querySelector('emoji-picker').addEventListener('emoji-click', event => {
+        handleReaction(event.detail.unicode);
+    });
+
     populateReactions();
     loadChatHistory();
-    pollMessages(); // Start the long polling loop
+    pollMessages();
     updateSendButton();
     setSignalLight('yellow'); 
 </script>
