@@ -472,9 +472,6 @@
             <button type="button" class="send-button" onclick="sendMessage()" id="sendBtn">
                 <i class="fas fa-paper-plane"></i>
             </button>
-            <button type="button" class="emoji-button" onclick="addQuickEmoji()">
-                🙂
-            </button>
         </div>
     </div>
 </div>
@@ -853,7 +850,6 @@
     function closeModal() { modalContainer.style.display = 'none'; }
     function scrollToBottom() { chatBox.scrollTop = chatBox.scrollHeight; }
     function openFileDialog() { fileInput.click(); }
-    function addQuickEmoji() { sendMessage('🙂'); }
     
     async function sendMessage(textOverride = null) {
         const message = textOverride || messageInput.value.trim();
