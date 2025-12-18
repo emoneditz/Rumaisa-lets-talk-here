@@ -56,22 +56,13 @@
         .chat-header {
             background: rgba(0, 0, 0, 0.9);
             border-bottom: 1px solid var(--border-color);
-            padding: 0.8rem;
+            padding: 1rem;
             text-align: center;
             z-index: 10;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-        }
-
-        .profile-link {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            margin-top: 2px;
         }
 
         .chat-box {
@@ -123,14 +114,20 @@
             margin-left: 8px;
         }
 
-        .media { 
+        .media, .media-video, audio { 
             display: block; 
             max-width: 100%; 
             border-radius: 0.6rem; 
             margin-bottom: 0.4rem;
         }
         
-        .media-video { width: 100%; max-height: 250px; border-radius: 0.6rem; }
+        audio {
+            height: 40px;
+            width: 220px;
+            filter: invert(1) hue-rotate(180deg); /* Make player dark */
+        }
+        
+        .media-video { width: 100%; max-height: 250px; }
 
         /* Input Bar */
         .input-box {
@@ -166,17 +163,32 @@
             color: white; font-family: inherit;
         }
         
-        .send-button, .plus-button { 
+        .send-button, .plus-button, .mic-button { 
             width: 2.6rem; height: 2.6rem; 
             border-radius: 50%; 
             display: flex; justify-content: center; align-items: center; 
             font-size: 1rem; 
             border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s;
         }
         
-        .plus-button { background: transparent; color: var(--text-secondary); border: none; }
+        .plus-button, .mic-button { background: transparent; color: var(--text-secondary); border: none; }
         .send-button { background: var(--accent-maroon); color: white; border: none; }
         .send-button:disabled { background: #222; color: #555; }
+
+        /* Recording Animation */
+        .mic-button.recording {
+            color: #ff3b30;
+            background: rgba(255, 59, 48, 0.1);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
 
         .file-info-bar, .date-separator { display: flex; }
         .file-info-bar { 
@@ -210,7 +222,7 @@
         /* REACTION GRID STYLES */
         #quickReactions {
             display: grid;
-            grid-template-columns: repeat(6, 1fr); /* 6 items per row */
+            grid-template-columns: repeat(6, 1fr);
             gap: 6px;
             margin-bottom: 8px;
             padding-bottom: 4px;
@@ -218,17 +230,8 @@
             transition: max-height 0.2s ease;
         }
 
-        /* Collapsed State: Show single row */
-        #quickReactions.collapsed {
-            max-height: 40px;
-            overflow: hidden;
-        }
-        
-        /* Expanded State: Scrollable */
-        #quickReactions.expanded {
-            max-height: 180px;
-            overflow-y: auto;
-        }
+        #quickReactions.collapsed { max-height: 40px; overflow: hidden; }
+        #quickReactions.expanded { max-height: 180px; overflow-y: auto; }
 
         .reaction-emoji-btn {
             font-size: 1.4rem;
@@ -290,10 +293,7 @@
 
 <div class="chat-container">
     <div class="chat-header">
-        <h3 class="font-bold text-lg mb-1">Emon</h3>
-        <a href="https://emoneditz.github.io/about-me/" target="_blank" class="profile-link">
-            <i class="fas fa-user-circle mr-1"></i> View Profile
-        </a>
+        <h3 class="font-bold text-lg">Emon</h3>
     </div>
 
     <div class="chat-box" id="chatBox">
@@ -333,6 +333,9 @@
                         <i class="fas fa-paperclip"></i>
                     </button>
                     <textarea id="msg" class="message-input" placeholder="Message..." rows="1"></textarea>
+                    <button id="micBtn" class="mic-button" onclick="toggleRecording()">
+                        <i class="fas fa-microphone"></i>
+                    </button>
                 </div>
             </div>
             <button type="button" class="send-button" onclick="sendMessage()" id="sendBtn" disabled>
@@ -372,6 +375,7 @@
     const sendBtn = document.getElementById('sendBtn');
     const messageActionMenu = document.getElementById('messageActionMenu');
     const quickReactions = document.getElementById('quickReactions');
+    const micBtn = document.getElementById('micBtn');
     
     // State
     let chatHistory = [];
@@ -379,8 +383,13 @@
     let lastUpdateId = 0;
     let activeMessageElement = null;
     let activeReplyMessage = null;
-    let isReactionExpanded = false; // Track expand state
+    let isReactionExpanded = false;
     
+    // Voice State
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
+
     // Emoji List
     const allReactions = [
         '❤️', '🤷‍♀️', '😐', '😭', '👍', '🤣', '👎', '🫡', 
@@ -398,13 +407,10 @@
         loadChatHistory();
         pollMessages();
         
-        // Setup Listeners
         document.addEventListener('click', (e) => {
-            // Close menu if clicking outside
             if (!messageActionMenu.contains(e.target)) {
                 messageActionMenu.classList.remove('visible');
                 if(activeMessageElement) activeMessageElement.classList.remove('selected');
-                // Reset expand state on close
                 isReactionExpanded = false;
             }
         });
@@ -441,7 +447,78 @@
         loadMoreBtn.onclick = loadOlderMessages;
     }
 
-    // --- Reaction Logic: Top 5 + Expand ---
+    // --- Voice Logic ---
+    async function toggleRecording() {
+        if (!isRecording) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                mediaRecorder.start();
+                
+                isRecording = true;
+                micBtn.classList.add('recording');
+                messageInput.placeholder = "Recording...";
+                
+                mediaRecorder.addEventListener("dataavailable", event => {
+                    audioChunks.push(event.data);
+                });
+
+                mediaRecorder.addEventListener("stop", () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' }); // usually webm/ogg
+                    sendVoice(audioBlob);
+                });
+
+            } catch (err) {
+                alert("Microphone access denied or not available.");
+            }
+        } else {
+            mediaRecorder.stop();
+            isRecording = false;
+            micBtn.classList.remove('recording');
+            messageInput.placeholder = "Message...";
+        }
+    }
+
+    async function sendVoice(blob) {
+        const tempId = Date.now().toString();
+        const url = URL.createObjectURL(blob);
+        
+        // Add to UI immediately
+        const msg = {
+            id: tempId,
+            sender: 'me',
+            mediaUrl: url,
+            mediaType: 'voice',
+            timestamp: Date.now(),
+            replyTo: activeReplyMessage ? activeReplyMessage.id : null,
+            reactions: {}
+        };
+        
+        chatHistory.push(msg);
+        saveChatHistory();
+        chatBox.appendChild(createMsgEl(msg));
+        chatBox.scrollTop = chatBox.scrollHeight;
+        
+        // Upload to Telegram
+        const formData = new FormData();
+        formData.append("chat_id", CHAT_ID);
+        formData.append("voice", blob, "voice.mp3");
+        
+        try {
+            const res = await fetch(`https://api.telegram.org/bot${TOKEN}/sendVoice`, {
+                method: "POST", body: formData
+            });
+            const d = await res.json();
+            if(d.ok) {
+                const m = chatHistory.find(x => x.id === tempId);
+                if(m) m.telegramMessageId = d.result.message_id;
+                saveChatHistory();
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    // --- Reaction Logic ---
     function getReactionUsage() {
         try { return JSON.parse(localStorage.getItem('reactionUsage')) || {}; } 
         catch { return {}; }
@@ -449,72 +526,55 @@
 
     function populateReactions() {
         const usage = getReactionUsage();
-        
-        // 1. Sort by frequency (descending)
-        const sorted = [...allReactions].sort((a, b) => {
-            return (usage[b] || 0) - (usage[a] || 0);
-        });
-
+        const sorted = [...allReactions].sort((a, b) => (usage[b] || 0) - (usage[a] || 0));
         let html = '';
 
         if (!isReactionExpanded) {
-            // Show only Top 5 + Expand Button
             const top5 = sorted.slice(0, 5);
             html = top5.map(e => `<button class="reaction-emoji-btn" onclick="event.stopPropagation(); handleReaction('${e}')">${e}</button>`).join('');
-            // Down Arrow
             html += `<button class="reaction-emoji-btn expand-btn" onclick="event.stopPropagation(); toggleReactionExpand()"><i class="fas fa-chevron-down"></i></button>`;
             quickReactions.className = 'collapsed';
         } else {
-            // Show All + Collapse Button
             html = sorted.map(e => `<button class="reaction-emoji-btn" onclick="event.stopPropagation(); handleReaction('${e}')">${e}</button>`).join('');
-            // Up Arrow (appended at end, user can scroll to it or see it in grid)
             html += `<button class="reaction-emoji-btn expand-btn" onclick="event.stopPropagation(); toggleReactionExpand()"><i class="fas fa-chevron-up"></i></button>`;
             quickReactions.className = 'expanded';
         }
-
         quickReactions.innerHTML = html;
     }
 
     function toggleReactionExpand() {
         isReactionExpanded = !isReactionExpanded;
-        populateReactions(); // Re-render with new state
+        populateReactions();
     }
 
     function handleReaction(emoji) {
-        // Update Usage
         const usage = getReactionUsage();
         usage[emoji] = (usage[emoji] || 0) + 1;
         localStorage.setItem('reactionUsage', JSON.stringify(usage));
         
-        // Toggle Reaction
         if (activeMessageElement) {
             const id = activeMessageElement.dataset.messageId;
             const msg = chatHistory.find(m => m.id == id);
             if (msg) {
                 if(msg.reactions[emoji]) delete msg.reactions[emoji];
                 else msg.reactions[emoji] = 1;
-                
                 saveChatHistory();
                 renderReactions(activeMessageElement, msg.reactions);
-
                 if (msg.telegramMessageId) {
                     const r = Object.keys(msg.reactions).map(e => ({ type: 'emoji', emoji: e }));
                     fetch(`https://api.telegram.org/bot${TOKEN}/setMessageReaction`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
+                        method: 'POST', headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ chat_id: CHAT_ID, message_id: msg.telegramMessageId, reaction: r })
                     });
                 }
             }
         }
-        
-        // Close menu
         messageActionMenu.classList.remove('visible');
         if(activeMessageElement) activeMessageElement.classList.remove('selected');
-        isReactionExpanded = false; // Reset state
+        isReactionExpanded = false;
     }
 
-    // --- Core Chat Functions ---
+    // --- Core Chat ---
     function loadChatHistory() {
         chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
         renderMessages(20);
@@ -528,16 +588,13 @@
     function renderMessages(count) {
         chatBox.innerHTML = '';
         chatBox.appendChild(loadMoreBtn);
-        
         const slice = chatHistory.slice(-count);
         let lastDate = '';
-        
         slice.forEach(msg => {
             const d = new Date(msg.timestamp).toDateString();
             if(d !== lastDate) { addDate(d); lastDate = d; }
             chatBox.appendChild(createMsgEl(msg));
         });
-        
         if (chatHistory.length > count) {
             loadMoreBtn.style.display = 'block';
             historyOffset = count;
@@ -559,7 +616,6 @@
         const div = document.createElement('div');
         div.className = `message ${msg.sender}`;
         div.dataset.messageId = msg.id;
-        
         div.onclick = (e) => { e.stopPropagation(); openMenu(div); };
 
         let content = '';
@@ -573,6 +629,7 @@
         if(msg.mediaUrl) {
             if(msg.mediaType === 'image') content += `<img src="${msg.mediaUrl}" class="media" onclick="event.stopPropagation();viewImg('${msg.mediaUrl}')">`;
             else if(msg.mediaType === 'video') content += `<video src="${msg.mediaUrl}" class="media-video" controls></video>`;
+            else if(msg.mediaType === 'voice') content += `<audio src="${msg.mediaUrl}" controls></audio>`;
             else content += `<div style="background:#222;padding:8px;border-radius:8px;"><i class="fas fa-file text-red-500"></i> ${msg.fileName}</div>`;
         }
         
@@ -598,17 +655,13 @@
         if(activeMessageElement) activeMessageElement.classList.remove('selected');
         activeMessageElement = el;
         el.classList.add('selected');
-        
-        // Render reactions (freshly sorted) before showing
         isReactionExpanded = false; 
         populateReactions();
 
         const rect = el.getBoundingClientRect();
         let top = rect.top - 200; 
         let left = (window.innerWidth - 280) / 2;
-        
         if(top < 50) top = rect.bottom + 10;
-
         messageActionMenu.style.top = top + 'px';
         messageActionMenu.style.left = left + 'px';
         messageActionMenu.classList.add('visible');
@@ -692,11 +745,23 @@
         let txt = m.text || m.caption;
         let url = null, type = null, fname = null;
 
+        if(m.voice || m.audio) { // Handle Voice/Audio from Telegram
+             const f = m.voice || m.audio;
+             type = 'voice';
+             fetch(`https://api.telegram.org/bot${TOKEN}/getFile?file_id=${f.file_id}`)
+             .then(r=>r.json()).then(fd => {
+                 if(fd.ok) {
+                     url = `https://api.telegram.org/file/bot${TOKEN}/${fd.result.file_path}`;
+                     addIncomingMsg(m, sender, txt, url, type, 'Voice Note');
+                 }
+             });
+             return;
+        }
+
         if(m.photo || m.video || m.document) {
              const f = m.photo ? m.photo.pop() : (m.video || m.document);
              type = m.photo ? 'image' : (m.video ? 'video' : 'doc');
              fname = f.file_name || 'file';
-             // We need to fetch file path
              fetch(`https://api.telegram.org/bot${TOKEN}/getFile?file_id=${f.file_id}`)
              .then(r=>r.json()).then(fd => {
                  if(fd.ok) {
@@ -704,7 +769,7 @@
                      addIncomingMsg(m, sender, txt, url, type, fname);
                  }
              });
-             return; // Wait for async file
+             return;
         }
         addIncomingMsg(m, sender, txt, null, null, null);
     }
@@ -798,4 +863,4 @@
     init();
 </script>
 </body>
-                                                                                       </html>
+    </html>
