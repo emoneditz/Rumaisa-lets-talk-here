@@ -124,7 +124,7 @@
         audio {
             height: 40px;
             width: 220px;
-            filter: invert(1) hue-rotate(180deg); /* Make player dark */
+            filter: invert(1) hue-rotate(180deg);
         }
         
         .media-video { width: 100%; max-height: 250px; }
@@ -154,6 +154,8 @@
             border: 1px solid var(--border-color);
             min-height: 2.8rem; 
             padding-right: 0.5rem;
+            position: relative;
+            overflow: hidden;
         }
 
         .message-input { 
@@ -161,6 +163,17 @@
             padding: 0.6rem 0.9rem; font-size: 0.95rem; 
             outline: none; resize: none; max-height: 100px; 
             color: white; font-family: inherit;
+        }
+
+        /* Recording UI overlay */
+        #recordingUI {
+            display: none;
+            flex: 1;
+            align-items: center;
+            padding: 0 1rem;
+            color: #ff453a;
+            font-weight: 500;
+            justify-content: space-between;
         }
         
         .send-button, .plus-button, .mic-button { 
@@ -177,17 +190,23 @@
         .send-button { background: var(--accent-maroon); color: white; border: none; }
         .send-button:disabled { background: #222; color: #555; }
 
-        /* Recording Animation */
         .mic-button.recording {
-            color: #ff3b30;
-            background: rgba(255, 59, 48, 0.1);
-            animation: pulse 1s infinite;
+            color: #ff453a;
+            background: rgba(255, 69, 58, 0.15);
+            animation: pulse 1.5s infinite;
         }
         
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 69, 58, 0.4); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 69, 58, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 69, 58, 0); }
+        }
+
+        .cancel-voice-btn {
+            color: #ff453a;
+            padding: 5px;
+            cursor: pointer;
+            font-size: 1.2rem;
         }
 
         .file-info-bar, .date-separator { display: flex; }
@@ -204,7 +223,6 @@
             border-radius: 8px; font-size: 0.65rem; 
         }
 
-        /* Context Menu */
         #messageActionMenu { 
             display: none; position: absolute; z-index: 101; 
             width: 280px; 
@@ -219,7 +237,6 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.8);
         }
 
-        /* REACTION GRID STYLES */
         #quickReactions {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
@@ -332,7 +349,18 @@
                     <button type="button" class="plus-button" onclick="document.getElementById('fileInput').click()">
                         <i class="fas fa-paperclip"></i>
                     </button>
+                    
+                    <!-- Text Area -->
                     <textarea id="msg" class="message-input" placeholder="Message..." rows="1"></textarea>
+                    
+                    <!-- Recording UI (Hidden by default) -->
+                    <div id="recordingUI">
+                        <span class="animate-pulse">Recording...</span>
+                        <div class="cancel-voice-btn" onclick="cancelRecording()">
+                            <i class="fas fa-trash-alt"></i>
+                        </div>
+                    </div>
+
                     <button id="micBtn" class="mic-button" onclick="toggleRecording()">
                         <i class="fas fa-microphone"></i>
                     </button>
@@ -376,6 +404,7 @@
     const messageActionMenu = document.getElementById('messageActionMenu');
     const quickReactions = document.getElementById('quickReactions');
     const micBtn = document.getElementById('micBtn');
+    const recordingUI = document.getElementById('recordingUI');
     
     // State
     let chatHistory = [];
@@ -389,6 +418,7 @@
     let mediaRecorder = null;
     let audioChunks = [];
     let isRecording = false;
+    let isCancelled = false; // Flag to check cancellation
 
     // Emoji List
     const allReactions = [
@@ -447,36 +477,53 @@
         loadMoreBtn.onclick = loadOlderMessages;
     }
 
-    // --- Voice Logic ---
+    // --- Voice Logic (Cancel Added) ---
     async function toggleRecording() {
         if (!isRecording) {
+            // Start Recording
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
                 audioChunks = [];
-                mediaRecorder.start();
+                isCancelled = false;
                 
+                mediaRecorder.start();
                 isRecording = true;
+                
+                // UI Changes
                 micBtn.classList.add('recording');
-                messageInput.placeholder = "Recording...";
+                messageInput.style.display = 'none';
+                recordingUI.style.display = 'flex';
                 
                 mediaRecorder.addEventListener("dataavailable", event => {
                     audioChunks.push(event.data);
                 });
 
                 mediaRecorder.addEventListener("stop", () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' }); // usually webm/ogg
-                    sendVoice(audioBlob);
+                    if (!isCancelled) {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                        sendVoice(audioBlob);
+                    }
+                    // Reset UI
+                    isRecording = false;
+                    micBtn.classList.remove('recording');
+                    messageInput.style.display = 'block';
+                    recordingUI.style.display = 'none';
                 });
 
             } catch (err) {
-                alert("Microphone access denied or not available.");
+                alert("Microphone access denied.");
             }
         } else {
+            // Stop & Send
             mediaRecorder.stop();
-            isRecording = false;
-            micBtn.classList.remove('recording');
-            messageInput.placeholder = "Message...";
+        }
+    }
+
+    function cancelRecording() {
+        if (mediaRecorder && isRecording) {
+            isCancelled = true; // Set flag so it doesn't send
+            mediaRecorder.stop();
         }
     }
 
@@ -484,7 +531,6 @@
         const tempId = Date.now().toString();
         const url = URL.createObjectURL(blob);
         
-        // Add to UI immediately
         const msg = {
             id: tempId,
             sender: 'me',
@@ -500,7 +546,6 @@
         chatBox.appendChild(createMsgEl(msg));
         chatBox.scrollTop = chatBox.scrollHeight;
         
-        // Upload to Telegram
         const formData = new FormData();
         formData.append("chat_id", CHAT_ID);
         formData.append("voice", blob, "voice.mp3");
@@ -863,4 +908,4 @@
     init();
 </script>
 </body>
-    </html>
+</html>
